@@ -1,0 +1,4649 @@
+// ========================================
+// File: AltAttribute.java
+// ========================================
+package AST;
+
+public class AltAttribute {
+    String alt;
+    String equal;
+    AngularExpression angularExpression;
+
+    public String getAlt() {
+        return alt;
+    }
+
+    public void setAlt(String alt) {
+        this.alt = alt;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public AngularExpression getAngularExpression() {
+        return angularExpression;
+    }
+
+    public void setAngularExpression(AngularExpression angularExpression) {
+        this.angularExpression = angularExpression;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("AltAttribute{\n");
+
+        if (alt != null) {
+            sb.append("  alt'").append(alt).append("\n");
+        }
+        if (equal != null) {
+            sb.append("  equal'").append(equal).append("\n");
+        }
+        if (angularExpression != null) {
+            sb.append("  angularExpression").append(angularExpression).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration(String elementVar) {
+        if (angularExpression.CodeGeneration() != null) {
+            return elementVar + ".alt = '" + angularExpression.CodeGeneration() + "';";
+        } else if (angularExpression != null) {
+            return elementVar + ".alt = " + angularExpression.CodeGeneration() + ";";
+        }
+        return "";
+    }
+}
+
+
+// ========================================
+// File: AngularBinding.java
+// ========================================
+package AST;
+
+public class AngularBinding {
+    String binding;
+    String equal;
+    String stringLiteral;
+    AngularExpression angularExpression;
+
+    public AngularExpression getAngularExpression() {
+        return angularExpression;
+    }
+
+    public void setAngularExpression(AngularExpression angularExpression) {
+        this.angularExpression = angularExpression;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getBinding() {
+        return binding;
+    }
+
+    public void setBinding(String binding) {
+        this.binding = binding;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("AngularBinding{\n");
+
+        if (binding != null) {
+            sb.append("  binding='").append(binding).append("\n");
+        }
+        if (equal != null) {
+            sb.append("  equal='").append(equal).append("\n");
+        }
+        if (stringLiteral != null) {
+            sb.append("  stringLiteral='").append(stringLiteral).append("\n");
+        }
+        if (angularExpression != null) {
+            sb.append("  angularExpression=").append(angularExpression).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration(String elementVar) {
+if(binding != null) {
+    String prop = binding.replace("[", "").replace("]", ""); // Extract property
+    String expr = angularExpression != null ?
+            angularExpression.CodeGeneration() :
+            ("'" + stringLiteral + "'"); // fallback to string literal
+
+    return elementVar + "." + prop + " = " + expr + ";";
+}
+return "";
+    }
+}
+
+
+// ========================================
+// File: AngularDirective.java
+// ========================================
+package AST;
+
+public class AngularDirective {
+    String ngFor;
+    String ngIf;
+    String equal;
+    String stringLiteral;
+
+    public String getNgFor() { return ngFor; }
+    public void setNgFor(String ngFor) { this.ngFor = ngFor; }
+    public String getNgIf() { return ngIf; }
+    public void setNgIf(String ngIf) { this.ngIf = ngIf; }
+    public String getEqual() { return equal; }
+    public void setEqual(String equal) { this.equal = equal; }
+    public String getStringLiteral() { return stringLiteral; }
+    public void setStringLiteral(String stringLiteral) { this.stringLiteral = stringLiteral; }
+
+    @Override
+    public String toString() {
+        return "AngularDirective{" +
+                (ngIf != null ? "ngIf='" + ngIf + "'" : "") +
+                (ngFor != null ? "ngFor='" + ngFor + "'" : "") + "}";
+    }
+
+
+    public String CodeGeneration(String elementCreationCode, String parentVar) {
+        StringBuilder sb = new StringBuilder();
+
+        // Handle *ngIf
+        if (ngIf != null && stringLiteral != null) {
+            sb.append("if (").append(stringLiteral.trim()).append(") {\n");
+            sb.append("  const el = ").append(elementCreationCode).append(";\n");
+            sb.append("  ").append(parentVar).append(".appendChild(el);\n");
+            sb.append("}\n");
+        }
+
+        // Handle *ngFor
+        if (ngFor != null) {
+            String[] parts = ngFor.split(" of ", 2);
+            if (parts.length == 2) {
+                String item = parts[0].replace("let ", "").trim();
+                String list = parts[1].trim();
+
+                sb.append("for (const ").append(item).append(" of ").append(list).append(") {\n");
+                sb.append("  const el = ").append(elementCreationCode).append(";\n");
+                sb.append("  ").append(parentVar).append(".appendChild(el);\n");
+                sb.append("}\n");
+            }
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: AngularEvent.java
+// ========================================
+package AST;
+
+public class AngularEvent{
+    String clickEvent;   // e.g. "click", "submit", "mouseenter"
+    String equal;        // "="
+    String stringLiteral; // e.g. "save()", "confirmDelete()"
+
+    // --- Getters and Setters ---
+    public String getClickEvent() {
+        return clickEvent;
+    }
+
+    public void setClickEvent(String clickEvent) {
+        this.clickEvent = clickEvent;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("AngularEvent{\n");
+
+        if (clickEvent != null) {
+            sb.append("  clickEvent='").append(clickEvent).append("'\n");
+        }
+        if (equal != null) {
+            sb.append("  equal='").append(equal).append("'\n");
+        }
+        if (stringLiteral != null) {
+            sb.append("  stringLiteral='").append(stringLiteral).append("'\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(String elementVar) {
+        StringBuilder sb = new StringBuilder();
+        if (clickEvent != null && stringLiteral != null) {
+            String evName = clickEvent.replace("(", "").replace(")", ""); // "click"
+            sb.append(elementVar).append(".addEventListener('")
+                    .append(evName).append("', ").append(stringLiteral).append(");");
+        }
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: AngularExpression.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class AngularExpression{
+    String identifier;
+    List<DotIdentifier>dotIdentifiers=new ArrayList<DotIdentifier>();
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public List<DotIdentifier> getDotIdentifiers() {
+        return dotIdentifiers;
+    }
+
+    public void setDotIdentifiers(List<DotIdentifier> dotIdentifiers) {
+        this.dotIdentifiers = dotIdentifiers;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("AngularExpression{\n");
+
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("\n");
+        }
+        if (dotIdentifiers != null && !dotIdentifiers.isEmpty()) {
+            sb.append("  dotIdentifiers=").append(dotIdentifiers).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(identifier);
+        for (DotIdentifier dotId : dotIdentifiers) {
+            sb.append(".").append(dotId.identifier);
+        }
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: Array.java
+// ========================================
+package AST;
+
+public class Array{
+    String arrayStart;      // "["
+    String arrayEnd;        // "]"
+    ArrayElements arrayElements;
+
+    public String getArrayStart() {
+        return arrayStart;
+    }
+
+    public void setArrayStart(String arrayStart) {
+        this.arrayStart = arrayStart;
+    }
+
+    public String getArrayEnd() {
+        return arrayEnd;
+    }
+
+    public void setArrayEnd(String arrayEnd) {
+        this.arrayEnd = arrayEnd;
+    }
+
+    public ArrayElements getArrayElements() {
+        return arrayElements;
+    }
+
+
+    public void setArrayElements(ArrayElements arrayElements) {
+        this.arrayElements = arrayElements;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Array{\n");
+
+        if (arrayStart != null) {
+            sb.append("  arrayStart='").append(arrayStart).append("'\n");
+        }
+        if (arrayEnd != null) {
+            sb.append("  arrayEnd='").append(arrayEnd).append("'\n");
+        }
+        if (arrayElements != null) {
+            sb.append("  arrayElements=").append(arrayElements).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        sb.append(arrayElements.CodeGeneration());
+        sb.append("]");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ArrayElement.java
+// ========================================
+package AST;
+
+public class ArrayElement{
+    Object object;      // Likely an AngularExpression or identifier
+    Value value;        // Likely a literal: string, number, etc.
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public void setValue(Value value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ArrayElement{");
+        boolean first = true;
+
+        if (object != null) {
+            if (!first) sb.append(", ");
+            sb.append("object=").append(object);
+            first = false;
+        }
+        if (value != null) {
+            if (!first) sb.append(", ");
+            sb.append("value=").append(value);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        if(object != null ) sb.append(object.CodeGeneration());
+        if(value != null )  sb.append(value.CodeGeneration());
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ArrayElements.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ArrayElements{
+    ArrayElement arrayElement;
+    List<CommaArrayElement> commaArrayElements = new ArrayList<>();
+
+    public ArrayElement getArrayElement() {
+        return arrayElement;
+    }
+
+    public void setArrayElement(ArrayElement arrayElement) {
+        this.arrayElement = arrayElement;
+    }
+
+    public List<CommaArrayElement> getCommaArrayElements() {
+        return commaArrayElements;
+    }
+
+    public void setCommaArrayElements(List<CommaArrayElement> commaArrayElements) {
+        this.commaArrayElements = commaArrayElements;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ArrayElements{\n");
+
+        if (arrayElement != null) {
+            sb.append("  arrayElement=").append(arrayElement).append(",\n");
+        }
+        if (commaArrayElements != null && !commaArrayElements.isEmpty()) {
+            sb.append("  commaArrayElements=").append(commaArrayElements).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(arrayElement.CodeGeneration());
+        for(CommaArrayElement item : commaArrayElements){
+            sb.append(",");
+            sb.append(item.arrayElement.CodeGeneration());
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Assignment.java
+// ========================================
+package AST;
+
+public class Assignment extends Statement{
+    String identifier;
+    String dot;
+    String equal;
+    Expression expression;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getDot() {
+        return dot;
+    }
+
+    public void setDot(String dot) {
+        this.dot = dot;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Assignment{\n");
+
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("',\n");
+        }
+        if (dot != null) {
+            sb.append("  dot='").append(dot).append("',\n");
+        }
+        if (equal != null) {
+            sb.append("  equal='").append(equal).append("',\n");
+        }
+        if (expression != null) {
+            sb.append("  expression=").append(expression).append(",\n");
+        }
+
+        // Remove trailing comma and newline
+        int lastComma = sb.lastIndexOf(",\n");
+        if (lastComma == sb.length() - 2) {
+            sb.delete(lastComma, sb.length());
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGenerate(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(identifier);
+        sb.append(" = ");
+        sb.append(expression.CodeGenerate());
+        sb.append(";\n");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Block.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Block {
+    String lbrace = "{";                    // '{'
+    String rbrace = "}";                    // '}'
+    List<Statement> statements = new ArrayList<>();
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public List<Statement> getStatements() {
+        return statements;
+    }
+
+    public void setStatements(List<Statement> statements) {
+        this.statements = statements;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Block{");
+
+        if (lbrace != null) {
+            sb.append("lbrace='").append(lbrace).append('\'');
+        }
+
+        if (rbrace != null) {
+            sb.append("rbrace='").append(rbrace).append('\'');
+        }
+
+        if (statements != null && !statements.isEmpty()) {
+            sb.append("statements=").append(statements);
+        } else {
+            if (sb.length() > 8) sb.append(", ");
+            sb.append("statements=[]");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGenerate(){
+        StringBuilder st = new StringBuilder();
+
+        for (Statement item : this.statements){
+
+            st.append(item.CodeGenerate());
+        }
+        return st.toString();
+    }
+}
+
+// ========================================
+// File: ClassBody.java
+// ========================================
+package AST;
+
+public class ClassBody {
+    VariableStatement variableStatement;
+    FunctionDeclaration functionDeclaration;
+    ConstructorDeclaration constructorDeclaration;
+
+    public VariableStatement getVariableStatement() {
+        return variableStatement;
+    }
+
+    public void setVariableStatement(VariableStatement variableStatement) {
+        this.variableStatement = variableStatement;
+    }
+
+    public FunctionDeclaration getFunctionDeclaration() {
+        return functionDeclaration;
+    }
+
+    public void setFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+        this.functionDeclaration = functionDeclaration;
+    }
+
+    public ConstructorDeclaration getConstructorDeclaration() {
+        return constructorDeclaration;
+    }
+
+    public void setConstructorDeclaration(ConstructorDeclaration constructorDeclaration) {
+        this.constructorDeclaration = constructorDeclaration;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ClassBody{");
+
+        if (variableStatement != null) {
+            sb.append("variableStatement=").append(variableStatement).append(", ");
+        }
+        if (functionDeclaration != null) {
+            sb.append("functionDeclaration=").append(functionDeclaration).append(", ");
+        }
+        if (constructorDeclaration != null) {
+            sb.append("constructorDeclaration=").append(constructorDeclaration);
+        }
+
+        // Remove trailing comma and space
+        String s = sb.toString();
+        if (s.endsWith(", ")) {
+            s = s.substring(0, s.length() - 2);
+        }
+        return s + "}";
+    }
+
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        if(variableStatement != null )  sb.append(variableStatement.CodeGeneration());
+        if(functionDeclaration != null) sb.append(functionDeclaration.CodeGenerate());
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ClassDeclaration.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClassDeclaration extends Statement {
+    String classes;           // "class"
+    String identifier;        // class name, e.g. "User"
+    String lbrace;            // "{"
+    String rbrace;            // "}"
+    List<ClassBody> classBodies = new ArrayList<>();
+
+    // --- Getters and Setters ---
+    public String getClasses() {
+        return classes;
+    }
+
+    public void setClasses(String classes) {
+        this.classes = classes;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public List<ClassBody> getClassBodies() {
+        return classBodies;
+    }
+
+    public void setClassBodies(List<ClassBody> classBodies) {
+        this.classBodies = classBodies;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ClassDeclaration{\n");
+
+        if (classes != null) {
+            sb.append("classes='").append(classes).append("'\n");
+        }
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append("'\n");
+        }
+        if (lbrace != null) {
+            sb.append("lbrace='").append(lbrace).append("'\n");
+        }
+        if (rbrace != null) {
+            sb.append("rbrace='").append(rbrace).append("'\n");
+        }
+        if (classBodies != null && !classBodies.isEmpty()) {
+            sb.append("classBodies=").append(classBodies).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("class ").append(identifier).append("{\n\t");
+        for(ClassBody item : classBodies){
+            sb.append('\t');
+            sb.append(item.CodeGeneration());
+            sb.append('\n');
+        }
+        sb.append('}').append('\n');
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: CommaArrayElement.java
+// ========================================
+package AST;
+
+public class CommaArrayElement {
+    String comma;               // "," (we can ignore it, but it's there)
+    ArrayElement arrayElement;  // the actual element after the comma
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public ArrayElement getArrayElement() {
+        return arrayElement;
+    }
+    public Value getValue(){
+        return this.arrayElement.getValue();
+    }
+    public void setArrayElement(ArrayElement arrayElement) {
+        this.arrayElement = arrayElement;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaArrayElement{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append("', ");
+        }
+        if (arrayElement != null) {
+            sb.append("arrayElement=").append(arrayElement);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: CommaComponentProperty.java
+// ========================================
+package AST;
+
+public class CommaComponentProperty {
+    String comma;                   // "," — ignored in codegen
+    ComponentProperty componentProperty;  // the actual key-value pair
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public ComponentProperty getComponentProperty() {
+        return componentProperty;
+    }
+
+    public void setComponentProperty(ComponentProperty componentProperty) {
+        this.componentProperty = componentProperty;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaComponentProperty{\n");
+
+        if (comma != null) {
+            sb.append("  comma='").append(comma).append("',\n");
+        }
+        if (componentProperty != null) {
+            sb.append("  componentProperty=").append(componentProperty).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: CommaExpression.java
+// ========================================
+package AST;
+
+public class CommaExpression {
+    String comma;           // "," — usually ignored in codegen
+    Expression expression;  // the actual expression after the comma
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaExpression{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append('\'');
+        }
+
+        if (expression != null) {
+            if (comma != null) sb.append(", ");
+            sb.append("expression=").append(expression);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: CommaIdentifier.java
+// ========================================
+package AST;
+
+public class CommaIdentifier {
+    String comma;           // "," — ignored in codegen
+    String identifier;      // the identifier after comma, e.g. "b"
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaIdentifier{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append('\'');
+        }
+
+        if (identifier != null) {
+            if (comma != null) sb.append(", ");
+            sb.append("identifier='").append(identifier).append('\'');
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: CommaImportSpecifier.java
+// ========================================
+package AST;
+
+public class CommaImportSpecifier {
+    String comma;
+ImportSpecifier importSpecifier;
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public ImportSpecifier getImportSpecifier() {
+        return importSpecifier;
+    }
+
+    public void setImportSpecifier(ImportSpecifier importSpecifier) {
+        this.importSpecifier = importSpecifier;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaImportSpecifier{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append('\'').append(", ");
+        }
+        if (importSpecifier != null) {
+            sb.append("importSpecifier=").append(importSpecifier);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: CommaParameterList.java
+// ========================================
+package AST;
+
+public class CommaParameterList {
+    String comma;                   // "," — ignored in code generation
+    ParameterList parameterList;    // the parameter(s) after the comma
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public ParameterList getParameterList() {
+        return parameterList;
+    }
+
+    public void setParameterList(ParameterList parameterList) {
+        this.parameterList = parameterList;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaParameterList{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append('\'');
+        }
+
+        if (parameterList != null) {
+            if (comma != null) sb.append(", ");
+            sb.append("parameterList=").append(parameterList);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGenerate(){
+        return parameterList.CodeGenerate();
+    }
+}
+
+// ========================================
+// File: CommaProperty.java
+// ========================================
+package AST;
+
+public class CommaProperty{
+    String comma;           // "," — ignored, but we know it's there
+    Property property;      // the actual key-value pair after the comma
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public Property getProperty() {
+        return property;
+    }
+
+    public void setProperty(Property property) {
+        this.property = property;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CommaProperty{");
+
+        if (comma != null) {
+            sb.append("comma='").append(comma).append("', ");
+        }
+        if (property != null) {
+            sb.append("property=").append(property);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+// ========================================
+// File: ComponentDefinition.java
+// ========================================
+package AST;
+
+public class ComponentDefinition {
+    Decorator decorator;   // @Component({...})
+    Block block;           // class body: { name = 'John'; }
+
+    public Decorator getDecorator() {
+        return decorator;
+    }
+
+    public void setDecorator(Decorator decorator) {
+        this.decorator = decorator;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ComponentDefinition{\n");
+
+        if (decorator != null) {
+            sb.append("  decorator=").append(decorator).append(",\n");
+        }
+        if (block != null) {
+            sb.append("  block=").append(block).append(",\n");
+        }
+
+        // Remove trailing comma
+        if (sb.lastIndexOf(",\n") == sb.length() - 2) {
+            sb.delete(sb.length() - 2, sb.length());
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ComponentOptions.java
+// ========================================
+package AST;
+
+public class ComponentOptions {
+    ComponentPropertyList componentPropertyList;
+
+    public ComponentPropertyList getComponentPropertyList() {
+        return componentPropertyList;
+    }
+
+    public void setComponentPropertyList(ComponentPropertyList componentPropertyList) {
+        this.componentPropertyList = componentPropertyList;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ComponentOptions{\n");
+
+        if (componentPropertyList != null) {
+            sb.append("  componentPropertyList=").append(componentPropertyList).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ComponentProperty.java
+// ========================================
+package AST;
+
+public class ComponentProperty {
+    String selector;
+    String colon;
+    String stringLiteral;
+    String Template;         // likely "templateUrl"
+    String styles;
+    String lbrace;
+    String rbrace;
+    String standalone;
+    String True;
+    String imports;
+    Array array;
+    Template template;       // inline template body (if any)
+
+    // --- Getters and Setters (already provided) ---
+    public Template getTemplatet(){
+        return this.template;
+    }
+    public void setTemplatet(Template template){
+        this.template = template;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ComponentProperty{\n");
+
+        if (selector != null) {
+            sb.append("  selector='").append(selector).append("',\n");
+        }
+        if (colon != null) {
+            sb.append("  colon='").append(colon).append("',\n");
+        }
+        if (stringLiteral != null) {
+            sb.append("  stringLiteral='").append(stringLiteral).append("',\n");
+        }
+        if (Template != null) {
+            sb.append("  Template='").append(Template).append("',\n");
+        }
+        if (styles != null) {
+            sb.append("  styles='").append(styles).append("',\n");
+        }
+        if (lbrace != null) {
+            sb.append("  lbrace='").append(lbrace).append("',\n");
+        }
+        if (rbrace != null) {
+            sb.append("  rbrace='").append(rbrace).append("',\n");
+        }
+        if (standalone != null) {
+            sb.append("  standalone='").append(standalone).append("',\n");
+        }
+        if (True != null) {
+            sb.append("  True='").append(True).append("',\n");
+        }
+        if (imports != null) {
+            sb.append("  imports='").append(imports).append("',\n");
+        }
+        if (array != null) {
+            sb.append("  array=").append(array).append(",\n");
+        }
+        if (template != null) {
+            sb.append("  template=").append(template).append("\n");
+        }
+
+        // Remove trailing comma
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
+
+    public String getColon() {
+        return colon;
+    }
+
+    public void setColon(String colon) {
+        this.colon = colon;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getTemplate() {
+        return Template;
+    }
+
+    public void setTemplate(AST.Template template) {
+        this.template = template;
+    }
+
+    public void setTemplate(String template) {
+        Template = template;
+    }
+
+    public String getStyles() {
+        return styles;
+    }
+
+    public void setStyles(String styles) {
+        this.styles = styles;
+    }
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public String getStandalone() {
+        return standalone;
+    }
+
+    public void setStandalone(String standalone) {
+        this.standalone = standalone;
+    }
+
+    public String getTrue() {
+        return True;
+    }
+
+    public void setTrue(String aTrue) {
+        True = aTrue;
+    }
+
+    public String getImports() {
+        return imports;
+    }
+
+    public void setImports(String imports) {
+        this.imports = imports;
+    }
+
+    public Array getArray() {
+        return array;
+    }
+
+    public void setArray(Array array) {
+        this.array = array;
+    }
+}
+
+// ========================================
+// File: ComponentPropertyList.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ComponentPropertyList {
+    ComponentProperty componentProperty;
+    String comma;  // "," after first property (ignored in codegen)
+    List<CommaComponentProperty> commaComponentProperties = new ArrayList<>();
+
+    public ComponentProperty getComponentProperty() {
+        return componentProperty;
+    }
+
+    public void setComponentProperty(ComponentProperty componentProperty) {
+        this.componentProperty = componentProperty;
+    }
+
+    public String getComma() {
+        return comma;
+    }
+
+    public void setComma(String comma) {
+        this.comma = comma;
+    }
+
+    public List<CommaComponentProperty> getCommaComponentProperties() {
+        return commaComponentProperties;
+    }
+
+    public void setCommaComponentProperties(List<CommaComponentProperty> commaComponentProperties) {
+        this.commaComponentProperties = commaComponentProperties;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ComponentPropertyList{\n");
+
+        if (componentProperty != null) {
+            sb.append("  componentProperty=").append(componentProperty).append(",\n");
+        }
+        if (comma != null) {
+            sb.append("  comma='").append(comma).append("',\n");
+        }
+        if (commaComponentProperties != null && !commaComponentProperties.isEmpty()) {
+            sb.append("  commaComponentProperties=").append(commaComponentProperties).append(",\n");
+        }
+
+        // Remove trailing ",\n"
+        if (sb.length() > 2 && sb.substring(sb.length() - 2).equals(",\n")) {
+            sb.setLength(sb.length() - 2);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ConstructorDeclaration.java
+// ========================================
+package AST;
+
+public class ConstructorDeclaration {
+    String constructor;         // "constructor"
+    String lparen;              // "("
+    String rparen;              // ")"
+    ParameterList parameterList; // parameters: name, age, etc.
+    Block block;                // constructor body
+
+    public String getConstructor() {
+        return constructor;
+    }
+
+    public void setConstructor(String constructor) {
+        this.constructor = constructor;
+    }
+
+    public String getLparen() {
+        return lparen;
+    }
+
+    public void setLparen(String lparen) {
+        this.lparen = lparen;
+    }
+
+    public String getRparen() {
+        return rparen;
+    }
+
+    public void setRparen(String rparen) {
+        this.rparen = rparen;
+    }
+
+    public ParameterList getParameterList() {
+        return parameterList;
+    }
+
+    public void setParameterList(ParameterList parameterList) {
+        this.parameterList = parameterList;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ConstructorDeclaration{");
+
+        if (constructor != null) {
+            sb.append("constructor='").append(constructor).append('\'').append(", ");
+        }
+        if (lparen != null) {
+            sb.append("lparen='").append(lparen).append('\'').append(", ");
+        }
+        if (rparen != null) {
+            sb.append("rparen='").append(rparen).append('\'').append(", ");
+        }
+        if (parameterList != null) {
+            sb.append("parameterList=").append(parameterList).append(", ");
+        }
+        if (block != null) {
+            sb.append("block=").append(block);
+        }
+
+        // Remove trailing ", "
+        if (sb.length() > 2 && sb.substring(sb.length() - 2).equals(", ")) {
+            sb.setLength(sb.length() - 2);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Decorator.java
+// ========================================
+package AST;
+
+public class Decorator extends Statement {
+    String atComponent;           // "@Component"
+    String lparen;                // "("
+    String rparen;                // ")"
+    String lbrace;                // "{"
+    String rbrace;                // "}"
+    ComponentOptions componentOptions; // { selector: ..., templateUrl: ... }
+
+    public String getAtComponent() {
+        return atComponent;
+    }
+
+    public void setAtComponent(String atComponent) {
+        this.atComponent = atComponent;
+    }
+
+    public String getLparen() {
+        return lparen;
+    }
+
+    public void setLparen(String lparen) {
+        this.lparen = lparen;
+    }
+
+    public String getRparen() {
+        return rparen;
+    }
+
+    public void setRparen(String rparen) {
+        this.rparen = rparen;
+    }
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public ComponentOptions getComponentOptions() {
+        return componentOptions;
+    }
+
+    public void setComponentOptions(ComponentOptions componentOptions) {
+        this.componentOptions = componentOptions;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Decorator{\n");
+
+        if (atComponent != null) {
+            sb.append("  atComponent='").append(atComponent).append("',\n");
+        }
+        if (lparen != null) {
+            sb.append("  lparen='").append(lparen).append("',\n");
+        }
+        if (rparen != null) {
+            sb.append("  rparen='").append(rparen).append("',\n");
+        }
+        if (lbrace != null) {
+            sb.append("  lbrace='").append(lbrace).append("',\n");
+        }
+        if (rbrace != null) {
+            sb.append("  rbrace='").append(rbrace).append("',\n");
+        }
+        if (componentOptions != null) {
+            sb.append("  componentOptions=").append(componentOptions).append(",\n");
+        }
+
+        // Remove trailing ",\n"
+        if (sb.lastIndexOf(",\n") == sb.length() - 2) {
+            sb.delete(sb.length() - 2, sb.length());
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGenerate(){
+        StringBuilder sb = new StringBuilder();
+        if(componentOptions.componentPropertyList.componentProperty.template != null) sb.append(componentOptions.componentPropertyList.componentProperty.template.CodeGenerate());
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: DivAttributes.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DivAttributes {
+    List<AngularBinding> angularBindings = new ArrayList<>();
+    List<AngularEvent> angularEvents = new ArrayList<>();
+    List<AngularDirective> angularDirectives = new ArrayList<>();
+    List<StyleAttribute> styleAttributes = new ArrayList<>();
+
+    public List<AngularBinding> getAngularBindings() {
+        return angularBindings;
+    }
+
+    public void setAngularBindings(List<AngularBinding> angularBindings) {
+        this.angularBindings = angularBindings;
+    }
+
+    public List<AngularEvent> getAngularEvents() {
+        return angularEvents;
+    }
+
+    public void setAngularEvents(List<AngularEvent> angularEvents) {
+        this.angularEvents = angularEvents;
+    }
+
+    public List<AngularDirective> getAngularDirectives() {
+        return angularDirectives;
+    }
+
+    public void setAngularDirectives(List<AngularDirective> angularDirectives) {
+        this.angularDirectives = angularDirectives;
+    }
+
+    public List<StyleAttribute> getStyleAttributes() {
+        return styleAttributes;
+    }
+
+    public void setStyleAttributes(List<StyleAttribute> styleAttributes) {
+        this.styleAttributes = styleAttributes;
+    }
+
+    @Override
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DivAttributes{\n");
+
+        if (!angularBindings.isEmpty()) {
+            sb.append("  angularBindings=").append(angularBindings).append(",\n");
+        }
+        if (!angularEvents.isEmpty()) {
+            sb.append("  angularEvents=").append(angularEvents).append(",\n");
+        }
+        if (!angularDirectives.isEmpty()) {
+            sb.append("  angularDirectives=").append(angularDirectives).append(",\n");
+        }
+        if (!styleAttributes.isEmpty()) {
+            sb.append("  styleAttributes=").append(styleAttributes).append("\n");
+        }
+
+        // Remove trailing comma and newline
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+    public String CodeGeneration(String elementVar) {
+        StringBuilder sb = new StringBuilder();
+
+        for (AngularBinding binding : angularBindings) {
+            sb.append("  ").append(binding.CodeGeneration(elementVar)).append("\n");
+        }
+
+        for (StyleAttribute style : styleAttributes) {
+            sb.append("  ").append(style.CodeGeneration(elementVar)).append("\n");
+        }
+
+        for (AngularEvent event : angularEvents) {
+            sb.append("  ").append(event.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // Add more: src, alt, etc.
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: DivElement.java
+// ========================================
+package AST;
+
+public class DivElement {
+    String htmlTagOpen;     // "<div"
+    String htmlTagClose;    // ">"
+    String htmlTagEnd;      // "</div>"
+    String divTag;          // possibly "div" — redundant
+    HtmlContent htmlContent; // inner content: text, {{ }}, elements
+
+    public String getHtmlTagOpen() {
+        return htmlTagOpen;
+    }
+
+    public void setHtmlTagOpen(String htmlTagOpen) {
+        this.htmlTagOpen = htmlTagOpen;
+    }
+
+    public String getHtmlTagClose() {
+        return htmlTagClose;
+    }
+
+    public void setHtmlTagClose(String htmlTagClose) {
+        this.htmlTagClose = htmlTagClose;
+    }
+
+    public String getHtmlTagEnd() {
+        return htmlTagEnd;
+    }
+
+    public void setHtmlTagEnd(String htmlTagEnd) {
+        this.htmlTagEnd = htmlTagEnd;
+    }
+
+    public String getDivTag() {
+        return divTag;
+    }
+
+    public void setDivTag(String divTag) {
+        this.divTag = divTag;
+    }
+
+    public HtmlContent getHtmlContent() {
+        return htmlContent;
+    }
+
+    public void setHtmlContent(HtmlContent htmlContent) {
+        this.htmlContent = htmlContent;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DivElement{\n");
+
+        if (htmlTagOpen != null) {
+            sb.append("  htmlTagOpen='").append(htmlTagOpen).append("',\n");
+        }
+        if (htmlTagClose != null) {
+            sb.append("  htmlTagClose='").append(htmlTagClose).append("',\n");
+        }
+        if (htmlTagEnd != null) {
+            sb.append("  htmlTagEnd='").append(htmlTagEnd).append("',\n");
+        }
+        if (divTag != null) {
+            sb.append("  divTag='").append(divTag).append("',\n");
+        }
+        if (htmlContent != null) {
+            sb.append("  htmlContent=").append(htmlContent).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("(() => {\n");
+        sb.append("  const div = document.createElement('div');\n");
+
+
+        // Generate inner content
+        if (htmlContent != null) {
+            sb.append("  ").append(htmlContent.CodeGeneration("div")).append("\n");
+        }
+
+        sb.append("  return div;\n");
+        sb.append("})()");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: DotIdentifier.java
+// ========================================
+package AST;
+
+public class DotIdentifier {
+    String dot;         // ".", usually not null
+    String identifier;  // property name, e.g. "name"
+
+    public String getDot() {
+        return dot;
+    }
+
+    public void setDot(String dot) {
+        this.dot = dot;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DotIdentifier{\n");
+
+        if (dot != null) {
+            sb.append("  dot='").append(dot).append("',\n");
+        }
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("'\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ExportStatement.java
+// ========================================
+package AST;
+
+public class ExportStatement {
+    String export;                      // "export"
+    VariableStatement variableStatement; // export const x = ...
+    FunctionDeclaration functionDeclaration; // export function f()
+    ClassDeclaration classDeclaration;   // export class C
+
+    public String getExport() {
+        return export;
+    }
+
+    public void setExport(String export) {
+        this.export = export;
+    }
+
+    public VariableStatement getVariableStatement() {
+        return variableStatement;
+    }
+
+    public void setVariableStatement(VariableStatement variableStatement) {
+        this.variableStatement = variableStatement;
+    }
+
+    public FunctionDeclaration getFunctionDeclaration() {
+        return functionDeclaration;
+    }
+
+    public void setFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+        this.functionDeclaration = functionDeclaration;
+    }
+
+    public ClassDeclaration getClassDeclaration() {
+        return classDeclaration;
+    }
+
+    public void setClassDeclaration(ClassDeclaration classDeclaration) {
+        this.classDeclaration = classDeclaration;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ExportStatement{\n");
+
+        if (export != null) {
+            sb.append("export='").append(export).append("'\n");
+        }
+
+        if (variableStatement != null) {
+            sb.append(", variableStatement=").append(variableStatement).append("\n");
+        }
+
+        if (functionDeclaration != null) {
+            sb.append(", functionDeclaration=").append(functionDeclaration).append("\n");
+        }
+
+        if (classDeclaration != null) {
+            sb.append(", classDeclaration=").append(classDeclaration).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Expression.java
+// ========================================
+package AST;
+
+public class Expression{
+    String lbrace;              // '{' — used in object literals?
+    String rbrace;              // '}' — same
+    String identifier;          // e.g. "user"
+    Literal literal;            // string, number, boolean
+    PropertyBinding propertyBinding;  // [prop]="value" — likely not here
+    TwoWayBinding twoWayBinding;      // [(ngModel)]="name"
+    NgDirective ngDirective;          // *ngIf, *ngFor
+    Expression expression;            // nested expression
+
+    // --- Getters and Setters (already provided) ---
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Expression{");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'');
+        }
+
+        if (literal != null) {
+            if (sb.length() > 10) sb.append(", ");
+            sb.append("literal=").append(literal);
+        }
+
+        if (propertyBinding != null) {
+            if (sb.length() > 10) sb.append(", ");
+            sb.append("propertyBinding=").append(propertyBinding);
+        }
+
+        if (twoWayBinding != null) {
+            if (sb.length() > 10) sb.append(", ");
+            sb.append("twoWayBinding=").append(twoWayBinding);
+        }
+
+        if (ngDirective != null) {
+            if (sb.length() > 10) sb.append(", ");
+            sb.append("ngDirective=").append(ngDirective);
+        }
+
+        if (expression != null) {
+            if (sb.length() > 10) sb.append(", ");
+            sb.append("expression=").append(expression);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public Literal getLiteral() {
+        return literal;
+    }
+
+    public void setLiteral(Literal literal) {
+        this.literal = literal;
+    }
+
+    public PropertyBinding getPropertyBinding() {
+        return propertyBinding;
+    }
+
+    public void setPropertyBinding(PropertyBinding propertyBinding) {
+        this.propertyBinding = propertyBinding;
+    }
+
+    public TwoWayBinding getTwoWayBinding() {
+        return twoWayBinding;
+    }
+
+    public void setTwoWayBinding(TwoWayBinding twoWayBinding) {
+        this.twoWayBinding = twoWayBinding;
+    }
+
+    public NgDirective getNgDirective() {
+        return ngDirective;
+    }
+
+    public void setNgDirective(NgDirective ngDirective) {
+        this.ngDirective = ngDirective;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    public String CodeGenerate(){
+        StringBuilder sb = new StringBuilder();
+        if(identifier!= null) sb.append(identifier);
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ExpressionList.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ExpressionList {
+    Expression expression;                    // first expression
+    List<CommaExpression> commaExpressions = new ArrayList<>(); // rest: , b, , c
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    public List<CommaExpression> getCommaExpressions() {
+        return commaExpressions;
+    }
+
+    public void setCommaExpressions(List<CommaExpression> commaExpressions) {
+        this.commaExpressions = commaExpressions;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ExpressionList{");
+
+        if (expression != null) {
+            sb.append("expression=").append(expression);
+        }
+
+        if (!commaExpressions.isEmpty()) {
+            if (sb.length() > 13) sb.append(", ");
+            sb.append("commaExpressions=").append(commaExpressions);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: FunctionDeclaration.java
+// ========================================
+package AST;
+
+public class FunctionDeclaration {
+    String identifier;           // function name, e.g. "greet"
+    String lparen;               // "("
+    String rparen;               // ")"
+    ParameterList parameterList; // parameters: name, age, etc.
+    Block block;                 // function body
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getLparen() {
+        return lparen;
+    }
+
+    public void setLparen(String lparen) {
+        this.lparen = lparen;
+    }
+
+    public String getRparen() {
+        return rparen;
+    }
+
+    public void setRparen(String rparen) {
+        this.rparen = rparen;
+    }
+
+    public ParameterList getParameterList() {
+        return parameterList;
+    }
+
+    public void setParameterList(ParameterList parameterList) {
+        this.parameterList = parameterList;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("FunctionDeclaration{\n");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append("'\n");
+        }
+        if (lparen != null) {
+            sb.append("lparen='").append(lparen).append("'\n");
+        }
+        if (rparen != null) {
+            sb.append("rparen='").append(rparen).append("'\n");
+        }
+        if (parameterList != null) {
+            sb.append("parameterList=").append(parameterList).append("\n");
+        }
+        if (block != null) {
+            sb.append("block=").append(block).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGenerate(){
+        StringBuilder st = new StringBuilder();
+        st.append("function ").append(identifier).append('(').append(parameterList.CodeGenerate()).append("){\n\t");
+        st.append(this.block.CodeGenerate());
+        st.append("}");
+        return st.toString();
+    }
+}
+
+// ========================================
+// File: GenericElement.java
+// ========================================
+package AST;
+
+public class GenericElement {
+    String htmlTagOpen;         // "<div", "<app-user"
+    String htmlTagClose;        // ">", "/>"
+    String htmlTagEnd;          // "</div>", "</app-user>"
+    String identifier;          // tag name: "div", "app-card"
+    HtmlAttributes htmlAttributes; // attributes (static + dynamic)
+    HtmlContent htmlContent;    // inner content
+
+    public String getHtmlTagOpen() {
+        return htmlTagOpen;
+    }
+
+    public void setHtmlTagOpen(String htmlTagOpen) {
+        this.htmlTagOpen = htmlTagOpen;
+    }
+
+    public String getHtmlTagClose() {
+        return htmlTagClose;
+    }
+
+    public void setHtmlTagClose(String htmlTagClose) {
+        this.htmlTagClose = htmlTagClose;
+    }
+
+    public String getHtmlTagEnd() {
+        return htmlTagEnd;
+    }
+
+    public void setHtmlTagEnd(String htmlTagEnd) {
+        this.htmlTagEnd = htmlTagEnd;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public HtmlAttributes getHtmlAttributes() {
+        return htmlAttributes;
+    }
+
+    public void setHtmlAttributes(HtmlAttributes htmlAttributes) {
+        this.htmlAttributes = htmlAttributes;
+    }
+
+    public HtmlContent getHtmlContent() {
+        return htmlContent;
+    }
+
+    public void setHtmlContent(HtmlContent htmlContent) {
+        this.htmlContent = htmlContent;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("GenericElement{\n");
+
+        if (htmlTagOpen != null) {
+            sb.append("  htmlTagOpen='").append(htmlTagOpen).append("',\n");
+        }
+        if (htmlTagClose != null) {
+            sb.append("  htmlTagClose='").append(htmlTagClose).append("',\n");
+        }
+        if (htmlTagEnd != null) {
+            sb.append("  htmlTagEnd='").append(htmlTagEnd).append("',\n");
+        }
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("',\n");
+        }
+        if (htmlAttributes != null) {
+            sb.append("  htmlAttributes=").append(htmlAttributes).append(",\n");
+        }
+        if (htmlContent != null) {
+            sb.append("  htmlContent=").append(htmlContent).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    // In GenericElement.java
+    public String CodeGeneration(String parentVar) {
+        StringBuilder sb = new StringBuilder();
+
+        // Generate code to create this element
+        String elementCreation = "(() => {\n" +
+                "  const el = document.createElement('" + identifier + "');\n";
+
+        if (htmlAttributes != null) {
+            elementCreation += "  " + htmlAttributes.CodeGeneration("el") + "\n";
+        }
+
+        if (htmlContent != null) {
+            elementCreation += "  " + htmlContent.CodeGeneration("el") + "\n";
+        }
+
+        elementCreation += "  return el;\n" +
+                "})()";
+
+        // Check for structural directives
+        if (htmlAttributes != null && !htmlAttributes.getAngularDirectives().isEmpty()) {
+            for (AngularDirective directive : htmlAttributes.getAngularDirectives()) {
+                sb.append(directive.CodeGeneration(elementCreation, parentVar)).append("\n");
+            }
+        } else {
+            // No structural directive → just append
+            sb.append("main").append(".appendChild(").append(elementCreation).append(");\n");
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: H2Attributes.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class H2Attributes {
+    List<AngularBinding> angularBindings = new ArrayList<>();
+    List<Interpolation> interpolations = new ArrayList<>();
+    List<StyleAttribute> styleAttributes = new ArrayList<>();
+
+    public List<AngularBinding> getAngularBindings() {
+        return angularBindings;
+    }
+
+    public void setAngularBindings(List<AngularBinding> angularBindings) {
+        this.angularBindings = angularBindings;
+    }
+
+    public List<Interpolation> getInterpolations() {
+        return interpolations;
+    }
+
+    public void setInterpolations(List<Interpolation> interpolations) {
+        this.interpolations = interpolations;
+    }
+
+    public List<StyleAttribute> getStyleAttributes() {
+        return styleAttributes;
+    }
+
+    public void setStyleAttributes(List<StyleAttribute> styleAttributes) {
+        this.styleAttributes = styleAttributes;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("H2Attributes{\n");
+
+        if (!angularBindings.isEmpty()) {
+            sb.append("  angularBindings=").append(angularBindings).append(",\n");
+        }
+        if (!interpolations.isEmpty()) {
+            sb.append("  interpolations=").append(interpolations).append(",\n");
+        }
+        if (!styleAttributes.isEmpty()) {
+            sb.append("  styleAttributes=").append(styleAttributes).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: H2Element.java
+// ========================================
+package AST;
+
+public class H2Element {
+    String htmlTagOpen;         // "<h2"
+    String htmlTagClose;        // ">", "/>"
+    String htmlTagEnd;          // "</h2>"
+    String h2Tag;               // "h2" (redundant)
+    HtmlAttributes htmlAttributes; // [class], (click), style, etc.
+    HtmlContent htmlContent;    // inner content: text, {{ }}, elements
+
+    public String getHtmlTagOpen() {
+        return htmlTagOpen;
+    }
+
+    public void setHtmlTagOpen(String htmlTagOpen) {
+        this.htmlTagOpen = htmlTagOpen;
+    }
+
+    public String getHtmlTagClose() {
+        return htmlTagClose;
+    }
+
+    public void setHtmlTagClose(String htmlTagClose) {
+        this.htmlTagClose = htmlTagClose;
+    }
+
+    public String getHtmlTagEnd() {
+        return htmlTagEnd;
+    }
+
+    public void setHtmlTagEnd(String htmlTagEnd) {
+        this.htmlTagEnd = htmlTagEnd;
+    }
+
+    public String getH2Tag() {
+        return h2Tag;
+    }
+
+    public void setH2Tag(String h2Tag) {
+        this.h2Tag = h2Tag;
+    }
+
+    public HtmlAttributes getHtmlAttributes() {
+        return htmlAttributes;
+    }
+
+    public void setHtmlAttributes(HtmlAttributes htmlAttributes) {
+        this.htmlAttributes = htmlAttributes;
+    }
+
+    public HtmlContent getHtmlContent() {
+        return htmlContent;
+    }
+
+    public void setHtmlContent(HtmlContent htmlContent) {
+        this.htmlContent = htmlContent;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("H2Element{\n");
+
+        if (htmlTagOpen != null) {
+            sb.append("  htmlTagOpen='").append(htmlTagOpen).append("',\n");
+        }
+        if (htmlTagClose != null) {
+            sb.append("  htmlTagClose='").append(htmlTagClose).append("',\n");
+        }
+        if (htmlTagEnd != null) {
+            sb.append("  htmlTagEnd='").append(htmlTagEnd).append("',\n");
+        }
+        if (h2Tag != null) {
+            sb.append("  h2Tag='").append(h2Tag).append("',\n");
+        }
+        if (htmlAttributes != null) {
+            sb.append("  htmlAttributes=").append(htmlAttributes).append(",\n");
+        }
+        if (htmlContent != null) {
+            sb.append("  htmlContent=").append(htmlContent).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("(() => {\n");
+        sb.append("  const h2 = document.createElement('h2');\n");
+
+        // Apply attributes: [class], (click), style, etc.
+        if (htmlAttributes != null) {
+            sb.append("  ").append(htmlAttributes.CodeGeneration("h2")).append("\n");
+        }
+
+        // Handle inner content: text, {{ interpolation }}, child elements
+        if (htmlContent != null) {
+            sb.append("  ").append(htmlContent.CodeGeneration("h2")).append("\n");
+        }
+
+        sb.append("  return h2;\n");
+        sb.append("})()");
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: HtmlAttributes.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class HtmlAttributes {
+    List<AngularBinding> angularBindings = new ArrayList<>();
+    List<AngularEvent> angularEvents = new ArrayList<>();
+    List<AngularDirective> angularDirectives = new ArrayList<>();
+    List<StyleAttribute> styleAttributes = new ArrayList<>();
+    List<SrcAttribute> srcAttributes = new ArrayList<>();
+    List<AltAttribute> altAttributes = new ArrayList<>();
+    List<String> stringLiterals = new ArrayList<>();
+
+    // --- Getters and Setters ---
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("HtmlAttributes{\n");
+
+        if (!angularBindings.isEmpty()) {
+            sb.append("  angularBindings=").append(angularBindings).append(",\n");
+        }
+        if (!angularEvents.isEmpty()) {
+            sb.append("  angularEvents=").append(angularEvents).append(",\n");
+        }
+        if (!angularDirectives.isEmpty()) {
+            sb.append("  angularDirectives=").append(angularDirectives).append(",\n");
+        }
+        if (!styleAttributes.isEmpty()) {
+            sb.append("  styleAttributes=").append(styleAttributes).append(",\n");
+        }
+        if (!srcAttributes.isEmpty()) {
+            sb.append("  srcAttributes=").append(srcAttributes).append(",\n");
+        }
+        if (!altAttributes.isEmpty()) {
+            sb.append("  altAttributes=").append(altAttributes).append(",\n");
+        }
+        if (!stringLiterals.isEmpty()) {
+            sb.append("  stringLiterals=").append(stringLiterals).append("\n");
+        }
+
+        // Remove trailing ",\n"
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+
+    public List<AngularBinding> getAngularBindings() {
+        return angularBindings;
+    }
+
+    public void setAngularBindings(List<AngularBinding> angularBindings) {
+        this.angularBindings = angularBindings;
+    }
+
+    public List<AngularEvent> getAngularEvents() {
+        return angularEvents;
+    }
+
+    public void setAngularEvents(List<AngularEvent> angularEvents) {
+        this.angularEvents = angularEvents;
+    }
+
+    public List<AngularDirective> getAngularDirectives() {
+        return angularDirectives;
+    }
+
+    public void setAngularDirectives(List<AngularDirective> angularDirectives) {
+        this.angularDirectives = angularDirectives;
+    }
+
+    public List<StyleAttribute> getStyleAttributes() {
+        return styleAttributes;
+    }
+
+    public void setStyleAttributes(List<StyleAttribute> styleAttributes) {
+        this.styleAttributes = styleAttributes;
+    }
+
+    public List<SrcAttribute> getSrcAttributes() {
+        return srcAttributes;
+    }
+
+    public void setSrcAttributes(List<SrcAttribute> srcAttributes) {
+        this.srcAttributes = srcAttributes;
+    }
+
+    public List<AltAttribute> getAltAttributes() {
+        return altAttributes;
+    }
+
+    public void setAltAttributes(List<AltAttribute> altAttributes) {
+        this.altAttributes = altAttributes;
+    }
+
+    public List<String> getStringLiterals() {
+        return stringLiterals;
+    }
+
+    public void setStringLiterals(List<String> stringLiterals) {
+        this.stringLiterals = stringLiterals;
+    }
+
+
+
+    public String CodeGeneration(String elementVar) {
+        StringBuilder sb = new StringBuilder();
+
+        // 1. Handle [property] bindings: [id]="userId" → el.id = userId;
+        for (AngularBinding binding : angularBindings) {
+            sb.append(binding.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // 2. Handle (event) bindings: (click)="save()" → el.addEventListener('click', save);
+        for (AngularEvent event : angularEvents) {
+            sb.append(event.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // 3. Handle style attributes: style="color:red" or [style.color]="theme"
+        for (StyleAttribute style : styleAttributes) {
+            sb.append(style.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // 4. Handle src attributes: [src]="imgUrl" → el.src = imgUrl;
+        for (SrcAttribute src : srcAttributes) {
+            sb.append(src.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // 5. Handle alt attributes: [alt]="desc" → el.alt = desc;
+        for (AltAttribute alt : altAttributes) {
+            sb.append(alt.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // 6. Handle structural directives: *ngIf, *ngFor
+        for (AngularDirective directive : angularDirectives) {
+            // Note: *ngIf/*ngFor wrap the entire element creation
+            // So this is usually handled at a higher level
+            // But we can emit comments or warnings
+            sb.append("/* Structural directive: ").append(directive.toString()).append(" */\n");
+        }
+
+        // 7. Static string literals (if any) — usually not used directly
+        for (String literal : stringLiterals) {
+            sb.append("/* Static: ").append(literal).append(" */\n");
+        }
+
+        return sb.toString();
+    }
+
+}
+
+// ========================================
+// File: HtmlContent.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class HtmlContent {
+    static int id =0;
+    List<HtmlElement> htmlElements = new ArrayList<>();
+    List<Interpolation> interpolations = new ArrayList<>();
+    List<AngularDirective> angularDirectives = new ArrayList<>();
+    List<AngularEvent> angularEvents = new ArrayList<>();
+    List<AngularBinding> angularBindings = new ArrayList<>();
+
+    public List<HtmlElement> getHtmlElements() {
+        return htmlElements;
+    }
+
+    public void setHtmlElements(List<HtmlElement> htmlElements) {
+        this.htmlElements = htmlElements;
+    }
+
+    public List<Interpolation> getInterpolations() {
+        return interpolations;
+    }
+
+    public void setInterpolations(List<Interpolation> interpolations) {
+        this.interpolations = interpolations;
+    }
+
+    public List<AngularDirective> getAngularDirectives() {
+        return angularDirectives;
+    }
+
+    public void setAngularDirectives(List<AngularDirective> angularDirectives) {
+        this.angularDirectives = angularDirectives;
+    }
+
+    public List<AngularEvent> getAngularEvents() {
+        return angularEvents;
+    }
+
+    public void setAngularEvents(List<AngularEvent> angularEvents) {
+        this.angularEvents = angularEvents;
+    }
+
+    public List<AngularBinding> getAngularBindings() {
+        return angularBindings;
+    }
+
+    public void setAngularBindings(List<AngularBinding> angularBindings) {
+        this.angularBindings = angularBindings;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("HtmlContent{\n");
+
+        if (!htmlElements.isEmpty()) {
+            sb.append("  htmlElements=").append(htmlElements).append(",\n");
+        }
+        if (!interpolations.isEmpty()) {
+            sb.append("  interpolations=").append(interpolations).append(",\n");
+        }
+        if (!angularDirectives.isEmpty()) {
+            sb.append("  angularDirectives=").append(angularDirectives).append(",\n");
+        }
+        if (!angularEvents.isEmpty()) {
+            sb.append("  angularEvents=").append(angularEvents).append(",\n");
+        }
+        if (!angularBindings.isEmpty()) {
+            sb.append("  angularBindings=").append(angularBindings).append("\n");
+        }
+
+        // Remove trailing ",\n"
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+
+    private HtmlAttributes getHtmlAttributes(HtmlElement el) {
+         if (el.getH2Element() != null && el.getH2Element().getHtmlAttributes() != null) {
+            return el.getH2Element().getHtmlAttributes();
+        } else if (el.getGenericElement() != null && el.getGenericElement().getHtmlAttributes() != null) {
+            return el.getGenericElement().getHtmlAttributes();
+        }
+        return null;
+    }
+
+    public String CodeGeneration(String parentVar) {
+        StringBuilder sb = new StringBuilder();
+        int counter = 0;
+
+        for (HtmlElement el : htmlElements) {
+            HtmlAttributes attrs = el.getHtmlAttributes(); // You need this method
+
+            if (attrs != null && !attrs.getAngularDirectives().isEmpty()) {
+                // Element has *ngIf or *ngFor → let directive handle creation AND appending
+                for (AngularDirective directive : attrs.getAngularDirectives()) {
+                    sb.append(directive.CodeGeneration(el.CodeGeneration(), parentVar)).append("\n");
+                }
+            } else {
+                // No structural directive → create and append normally
+                String childVar = "child" + (counter++);
+                sb.append("  const ").append(childVar).append(" = ").append(el.CodeGeneration()).append(";\n");
+                sb.append("  ").append(parentVar).append(".appendChild(").append(childVar).append(");\n");
+            }
+        }
+
+        // Handle interpolations
+        for (Interpolation interp : interpolations) {
+            sb.append("  ").append(interp.CodeGeneration(parentVar)).append("\n");
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: HtmlElement.java
+// ========================================
+package AST;
+
+public class HtmlElement {
+    DivElement divElement;
+    PElement pElement;
+    ImgElement imgElement;
+    H2Element h2Element;
+    GenericElement genericElement;
+
+    public DivElement getDivElement() {
+        return divElement;
+    }
+
+    public void setDivElement(DivElement divElement) {
+        this.divElement = divElement;
+    }
+
+    public PElement getpElement() {
+        return pElement;
+    }
+
+    public void setpElement(PElement pElement) {
+        this.pElement = pElement;
+    }
+
+    public ImgElement getImgElement() {
+        return imgElement;
+    }
+
+    public HtmlAttributes getHtmlAttributes() {
+        if (this.getH2Element() != null && this.getH2Element().getHtmlAttributes() != null) {
+            return this.getH2Element().getHtmlAttributes();
+        } else if (this.getGenericElement() != null && this.getGenericElement().getHtmlAttributes() != null) {
+            return this.getGenericElement().getHtmlAttributes();
+        }
+        return null;
+    }
+    public void setImgElement(ImgElement imgElement) {
+        this.imgElement = imgElement;
+    }
+
+    public H2Element getH2Element() {
+        return h2Element;
+    }
+
+    public void setH2Element(H2Element h2Element) {
+        this.h2Element = h2Element;
+    }
+
+    public GenericElement getGenericElement() {
+        return genericElement;
+    }
+
+    public void setGenericElement(GenericElement genericElement) {
+        this.genericElement = genericElement;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("HtmlElement{\n");
+
+        if (divElement != null) {
+            sb.append("  divElement=").append(divElement).append(",\n");
+        }
+        if (pElement != null) {
+            sb.append("  pElement=").append(pElement).append(",\n");
+        }
+        if (imgElement != null) {
+            sb.append("  imgElement=").append(imgElement).append(",\n");
+        }
+        if (h2Element != null) {
+            sb.append("  h2Element=").append(h2Element).append(",\n");
+        }
+        if (genericElement != null) {
+            sb.append("  genericElement=").append(genericElement).append("\n");
+        }
+
+        // Remove trailing ",\n"
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        if(divElement != null){
+            sb.append(divElement.CodeGeneration());
+        }
+        if(pElement != null){
+            sb.append(pElement.CodeGeneration());
+        }
+        if(imgElement != null){
+            sb.append(imgElement.CodeGeneration());
+        }
+        if (h2Element != null){
+            sb.append(h2Element.CodeGeneration());
+        }
+        if(genericElement != null){
+            sb.append(genericElement.CodeGeneration("document"));
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ImgAttributes.java
+// ========================================
+package AST;
+
+public class ImgAttributes {
+    AngularBinding angularBinding;
+    StyleAttribute styleAttribute;
+    SrcAttribute srcAttribute;
+    AltAttribute altAttribute;
+
+    public AngularBinding getAngularBinding() {
+        return angularBinding;
+    }
+
+    public void setAngularBinding(AngularBinding angularBinding) {
+        this.angularBinding = angularBinding;
+    }
+
+    public StyleAttribute getStyleAttribute() {
+        return styleAttribute;
+    }
+
+    public void setStyleAttribute(StyleAttribute styleAttribute) {
+        this.styleAttribute = styleAttribute;
+    }
+
+    public SrcAttribute getSrcAttribute() {
+        return srcAttribute;
+    }
+
+    public void setSrcAttribute(SrcAttribute srcAttribute) {
+        this.srcAttribute = srcAttribute;
+    }
+
+    public AltAttribute getAltAttribute() {
+        return altAttribute;
+    }
+
+    public void setAltAttribute(AltAttribute altAttribute) {
+        this.altAttribute = altAttribute;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ImgAttributes{\n");
+
+        if (angularBinding != null) {
+            sb.append("  angularBinding=").append(angularBinding).append(",\n");
+        }
+        if (styleAttribute != null) {
+            sb.append("  styleAttribute=").append(styleAttribute).append(",\n");
+        }
+        if (srcAttribute != null) {
+            sb.append("  srcAttribute=").append(srcAttribute).append(",\n");
+        }
+        if (altAttribute != null) {
+            sb.append("  altAttribute=").append(altAttribute).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(String elementVar) {
+        StringBuilder sb = new StringBuilder();
+
+        if (srcAttribute != null) {
+            sb.append(srcAttribute.CodeGeneration(elementVar)).append("\n");
+        }
+        if (altAttribute != null) {
+            sb.append(altAttribute.CodeGeneration(elementVar)).append("\n");
+        }
+        if (angularBinding != null) {
+            sb.append(angularBinding.CodeGeneration(elementVar)).append("\n");
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ImgElement.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ImgElement {
+    String htmlTagOpen;                 // "<img"
+    String htmlTagClose;                // "/>", ">"
+    String identifier;                  // "img" (optional)
+    List<ImgAttributes> imgAttributes = new ArrayList<>();
+
+    public String getHtmlTagOpen() {
+        return htmlTagOpen;
+    }
+
+    public void setHtmlTagOpen(String htmlTagOpen) {
+        this.htmlTagOpen = htmlTagOpen;
+    }
+
+    public String getHtmlTagClose() {
+        return htmlTagClose;
+    }
+
+    public void setHtmlTagClose(String htmlTagClose) {
+        this.htmlTagClose = htmlTagClose;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public List<ImgAttributes> getImgAttributes() {
+        return imgAttributes;
+    }
+
+    public void setImgAttributes(List<ImgAttributes> imgAttributes) {
+        this.imgAttributes = imgAttributes;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ImgElement{\n");
+
+        if (htmlTagOpen != null) {
+            sb.append("  htmlTagOpen='").append(htmlTagOpen).append("',\n");
+        }
+        if (htmlTagClose != null) {
+            sb.append("  htmlTagClose='").append(htmlTagClose).append("',\n");
+        }
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("',\n");
+        }
+        if (imgAttributes != null && !imgAttributes.isEmpty()) {
+            sb.append("  imgAttributes=").append(imgAttributes).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("(() => {\n");
+        sb.append("  const img = document.createElement('img');\n");
+
+        if (imgAttributes != null) {
+            for (ImgAttributes attr : imgAttributes) {
+                sb.append("  ").append(attr.CodeGeneration("img")).append("\n");
+            }
+        }
+
+        sb.append("  return img;\n");
+        sb.append("})()");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: ImportClause.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ImportClause {
+    String lbrace;
+    String rbrace;
+    String identifier;
+    ImportSpecifier importSpecifier;
+List<CommaImportSpecifier> commaImportSpecifiers=new ArrayList<CommaImportSpecifier>();
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public ImportSpecifier getImportSpecifier() {
+        return importSpecifier;
+    }
+
+    public void setImportSpecifier(ImportSpecifier importSpecifier) {
+        this.importSpecifier = importSpecifier;
+    }
+
+    public List<CommaImportSpecifier> getCommaImportSpecifiers() {
+        return commaImportSpecifiers;
+    }
+
+    public void setCommaImportSpecifiers(List<CommaImportSpecifier> commaImportSpecifiers) {
+        this.commaImportSpecifiers = commaImportSpecifiers;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ImportClause{");
+
+        if (lbrace != null) {
+            sb.append("lbrace='").append(lbrace).append('\'').append(", ");
+        }
+        if (rbrace != null) {
+            sb.append("rbrace='").append(rbrace).append('\'').append(", ");
+        }
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'').append(", ");
+        }
+        if (importSpecifier != null) {
+            sb.append("importSpecifier=").append(importSpecifier).append(", ");
+        }
+        if (!commaImportSpecifiers.isEmpty()) {
+            sb.append("commaImportSpecifiers=").append(commaImportSpecifiers);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: ImportSpecifier.java
+// ========================================
+package AST;
+
+public class ImportSpecifier {
+    String identifier;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ImportSpecifier{");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'');
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: ImportStatement.java
+// ========================================
+package AST;
+
+public class ImportStatement extends Statement{
+    String Import;
+    String from;
+    String semi;
+    String stringLiteral;
+    ImportClause importClause;
+
+    public String getImport() {
+        return Import;
+    }
+
+    public void setImport(String anImport) {
+        Import = anImport;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getSemi() {
+        return semi;
+    }
+
+    public void setSemi(String semi) {
+        this.semi = semi;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public ImportClause getImportClause() {
+        return importClause;
+    }
+
+    public void setImportClause(ImportClause importClause) {
+        this.importClause = importClause;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ImportStatement{\n");
+
+        if (Import != null) {
+            sb.append("Import='").append(Import).append('\'').append("\n");
+        }
+        if (from != null) {
+            sb.append("from='").append(from).append('\'').append("\n");
+        }
+        if (semi != null) {
+            sb.append("semi='").append(semi).append('\'').append("\n");
+        }
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append("\n");
+        }
+        if (importClause != null) {
+            sb.append("importClause=").append(importClause).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: InterfaceBody.java
+// ========================================
+package AST;
+
+public class InterfaceBody {
+    String identifier;
+    String colon;
+    String semi;
+    Type type;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getColon() {
+        return colon;
+    }
+
+    public void setColon(String colon) {
+        this.colon = colon;
+    }
+
+    public String getSemi() {
+        return semi;
+    }
+
+    public void setSemi(String semi) {
+        this.semi = semi;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("InterfaceBody{");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'').append(", ");
+        }
+        if (colon != null) {
+            sb.append("colon='").append(colon).append('\'').append(", ");
+        }
+        if (semi != null) {
+            sb.append("semi='").append(semi).append('\'').append(", ");
+        }
+        if (type != null) {
+            sb.append("type=").append(type);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: InterfaceDeclaration.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class InterfaceDeclaration {
+    String Interface;
+    String lbrace;
+    String rbrace;
+    String identifier;
+    List<InterfaceBody> interfaceBodies=new ArrayList<InterfaceBody>();
+
+    public String getInterface() {
+        return Interface;
+    }
+
+    public void setInterface(String anInterface) {
+        Interface = anInterface;
+    }
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public List<InterfaceBody> getInterfaceBodies() {
+        return interfaceBodies;
+    }
+
+    public void setInterfaceBodies(List<InterfaceBody> interfaceBodies) {
+        this.interfaceBodies = interfaceBodies;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("InterfaceDeclaration{");
+
+        if (Interface != null) {
+            sb.append("Interface='").append(Interface).append('\'').append(", ");
+        }
+        if (lbrace != null) {
+            sb.append("lbrace='").append(lbrace).append('\'').append(", ");
+        }
+        if (rbrace != null) {
+            sb.append("rbrace='").append(rbrace).append('\'').append(", ");
+        }
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'').append(", ");
+        }
+        if (interfaceBodies != null && !interfaceBodies.isEmpty()) {
+            sb.append("interfaceBodies=").append(interfaceBodies);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: Interpolation.java
+// ========================================
+package AST;
+
+public class Interpolation {
+    String propertyBinding;  // Holds the expression string, e.g. "user.name"
+
+    public String getPropertyBinding() {
+        return propertyBinding;
+    }
+
+    public void setPropertyBinding(String propertyBinding) {
+        this.propertyBinding = propertyBinding;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Interpolation{");
+        if (propertyBinding != null) {
+            sb.append("propertyBinding='").append(propertyBinding).append("'");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+    // In Interpolation.java
+    public String CodeGeneration(String elementVar) {
+        if (propertyBinding == null || propertyBinding.trim().isEmpty()) {
+            return elementVar + ".textContent = '';";
+        }
+
+        // Remove {{ and }} and trim whitespace
+        String expr = propertyBinding.trim();
+        if (expr.startsWith("{{") && expr.endsWith("}}")) {
+            expr = expr.substring(2, expr.length() - 2).trim();
+        }
+
+        return elementVar + ".textContent = " + expr + ";";
+    }
+}
+
+// ========================================
+// File: Literal.java
+// ========================================
+package AST;
+
+public class Literal {
+    String stringLiteral;
+    String numberLiteral;
+    String booleanLiteral;
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getNumberLiteral() {
+        return numberLiteral;
+    }
+
+    public void setNumberLiteral(String numberLiteral) {
+        this.numberLiteral = numberLiteral;
+    }
+
+    public String getBooleanLiteral() {
+        return booleanLiteral;
+    }
+
+    public void setBooleanLiteral(String booleanLiteral) {
+        this.booleanLiteral = booleanLiteral;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Literal{");
+
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append('\'');
+        }
+
+        if (numberLiteral != null) {
+            if (sb.length() > 8) sb.append(", ");
+            sb.append("numberLiteral='").append(numberLiteral).append('\'');
+        }
+
+        if (booleanLiteral != null) {
+            if (sb.length() > 8) sb.append(", ");
+            sb.append("booleanLiteral='").append(booleanLiteral).append('\'');
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: NgDirective.java
+// ========================================
+package AST;
+
+public class NgDirective {
+    String equal;
+    String stringLiteral;
+    String directive;
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getDirective() {
+        return directive;
+    }
+
+    public void setDirective(String directive) {
+        this.directive = directive;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("NgDirective{");
+
+        if (directive != null) {
+            sb.append("directive='").append(directive).append('\'');
+        }
+
+        if (equal != null) {
+            sb.append(", equal='").append(equal).append('\'');
+        }
+
+        if (stringLiteral != null) {
+            sb.append(", stringLiteral='").append(stringLiteral).append('\'');
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Object.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Object {
+    String lbrace;
+    String rbrace;
+    Property property;
+    List<CommaProperty> commaProperties=new ArrayList<CommaProperty>();
+
+    public String getLbrace() {
+        return lbrace;
+    }
+
+    public void setLbrace(String lbrace) {
+        this.lbrace = lbrace;
+    }
+
+    public String getRbrace() {
+        return rbrace;
+    }
+
+    public void setRbrace(String rbrace) {
+        this.rbrace = rbrace;
+    }
+
+    public Property getProperty() {
+        return property;
+    }
+
+    public void setProperty(Property property) {
+        this.property = property;
+    }
+
+    public List<CommaProperty> getCommaProperties() {
+        return commaProperties;
+    }
+
+    public void setCommaProperties(List<CommaProperty> commaProperties) {
+        this.commaProperties = commaProperties;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Object{");
+
+        if (lbrace != null) {
+            sb.append("lbrace='").append(lbrace).append("', ").append("\n");
+        }
+        if (rbrace != null) {
+            sb.append("rbrace='").append(rbrace).append("', ").append("\n");
+        }
+        if (property != null) {
+            sb.append("property=").append(property).append(", ").append("\n");
+        }
+        if (!commaProperties.isEmpty()) {
+            sb.append("commaProperties=").append(commaProperties).append("\n");;
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n\t");
+        sb.append(property.identifier);
+        sb.append(property.value.CodeGeneration());
+        if(!commaProperties.isEmpty()){
+            for(CommaProperty item : commaProperties){
+                sb.append(",\t");
+                sb.append(item.property.CodeGeneration());
+            }
+        }
+        sb.append('\n');
+        sb.append("}");
+        sb.append('\n');
+
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: ParameterList.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ParameterList{
+    String identifier;  // e.g. "name"
+    String colon;       // ":" — ignored
+    List<CommaParameterList> commaParameterLists = new ArrayList<>();
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getColon() {
+        return colon;
+    }
+
+    public void setColon(String colon) {
+        this.colon = colon;
+    }
+
+    public List<CommaParameterList> getCommaParameterLists() {
+        return commaParameterLists;
+    }
+
+    public void setCommaParameterLists(List<CommaParameterList> commaParameterLists) {
+        this.commaParameterLists = commaParameterLists;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("ParameterList{");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\'');
+        }
+
+        if (colon != null) {
+            sb.append(", colon='").append(colon).append('\'');
+        }
+
+        if (!commaParameterLists.isEmpty()) {
+            sb.append(", commaParameterLists=").append(commaParameterLists);
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGenerate(){
+        StringBuilder st = new StringBuilder();
+        st.append(identifier);
+        if(!commaParameterLists.isEmpty()){
+            for (CommaParameterList item : this.commaParameterLists){
+                st.append(',');
+                st.append(item.CodeGenerate());
+            }
+        }
+        return st.toString();
+    }
+}
+
+// ========================================
+// File: PAttributes.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PAttributes {
+    List<AngularBinding> angularBindings = new ArrayList<>();
+    List<Interpolation> interpolations = new ArrayList<>();
+    List<StyleAttribute> styleAttributes = new ArrayList<>();
+
+    public List<AngularBinding> getAngularBindings() {
+        return angularBindings;
+    }
+
+    public void setAngularBindings(List<AngularBinding> angularBindings) {
+        this.angularBindings = angularBindings;
+    }
+
+    public List<Interpolation> getInterpolations() {
+        return interpolations;
+    }
+
+    public void setInterpolations(List<Interpolation> interpolations) {
+        this.interpolations = interpolations;
+    }
+
+    public List<StyleAttribute> getStyleAttributes() {
+        return styleAttributes;
+    }
+
+    public void setStyleAttributes(List<StyleAttribute> styleAttributes) {
+        this.styleAttributes = styleAttributes;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("PAttributes{\n");
+
+        if (!angularBindings.isEmpty()) {
+            sb.append("  angularBindings=").append(angularBindings).append(",\n");
+        }
+        if (!interpolations.isEmpty()) {
+            sb.append("  interpolations=").append(interpolations).append(",\n");
+        }
+        if (!styleAttributes.isEmpty()) {
+            sb.append("  styleAttributes=").append(styleAttributes).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(String elementVar) {
+        StringBuilder sb = new StringBuilder();
+
+        // Handle [property] bindings like [className]="myClass"
+        for (AngularBinding binding : angularBindings) {
+            sb.append(binding.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // Handle inline styles: [style.color] or static style=""
+        for (StyleAttribute style : styleAttributes) {
+            sb.append(style.CodeGeneration(elementVar)).append("\n");
+        }
+
+        // Handle {{ interpolation }} in attributes (rare, but possible)
+        for (Interpolation interp : interpolations) {
+            sb.append("  ").append(interp.CodeGeneration(elementVar)).append("\n");
+        }
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: PElement.java
+// ========================================
+package AST;
+
+public class PElement {
+    String htmlTagOpen;         // "<p"
+    String htmlTagClose;        // ">", "/>"
+    String htmlTagEnd;          // "</p>"
+    String pTag;                // "p" (redundant)
+    HtmlContent htmlContent;    // inner content: text, {{ }}, elements
+    PAttributes pAttributes;    // [class], style, interpolations (misplaced)
+
+    public String getHtmlTagOpen() {
+        return htmlTagOpen;
+    }
+
+    public void setHtmlTagOpen(String htmlTagOpen) {
+        this.htmlTagOpen = htmlTagOpen;
+    }
+
+    public String getHtmlTagClose() {
+        return htmlTagClose;
+    }
+
+    public void setHtmlTagClose(String htmlTagClose) {
+        this.htmlTagClose = htmlTagClose;
+    }
+
+    public String getHtmlTagEnd() {
+        return htmlTagEnd;
+    }
+
+    public void setHtmlTagEnd(String htmlTagEnd) {
+        this.htmlTagEnd = htmlTagEnd;
+    }
+
+    public String getpTag() {
+        return pTag;
+    }
+
+    public void setpTag(String pTag) {
+        this.pTag = pTag;
+    }
+
+    public HtmlContent getHtmlContent() {
+        return htmlContent;
+    }
+
+    public void setHtmlContent(HtmlContent htmlContent) {
+        this.htmlContent = htmlContent;
+    }
+
+    public PAttributes getpAttributes() {
+        return pAttributes;
+    }
+
+    public void setpAttributes(PAttributes pAttributes) {
+        this.pAttributes = pAttributes;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("PElement{\n");
+
+        if (htmlTagOpen != null) {
+            sb.append("  htmlTagOpen='").append(htmlTagOpen).append("',\n");
+        }
+        if (htmlTagClose != null) {
+            sb.append("  htmlTagClose='").append(htmlTagClose).append("',\n");
+        }
+        if (htmlTagEnd != null) {
+            sb.append("  htmlTagEnd='").append(htmlTagEnd).append("',\n");
+        }
+        if (pTag != null) {
+            sb.append("  pTag='").append(pTag).append("',\n");
+        }
+        if (htmlContent != null) {
+            sb.append("  htmlContent=").append(htmlContent).append(",\n");
+        }
+        if (pAttributes != null) {
+            sb.append("  pAttributes=").append(pAttributes).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(() => {\n");
+        sb.append("  const p = document.createElement('p');\n");
+
+        // Apply attributes
+        if (pAttributes != null) {
+            sb.append("  ").append(pAttributes.CodeGeneration("p")).append("\n");
+        }
+
+        // Handle inner content
+        if (htmlContent != null) {
+            sb.append("  const content = ").append(htmlContent.CodeGeneration("p")).append(";\n");
+            sb.append("  p.appendChild(content);\n");
+        }
+
+        sb.append("  return p;\n");
+        sb.append("})()");
+
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Program.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Program {
+    List<Statement> statements = new ArrayList<>();
+
+    public List<Statement> getStatements() {
+        return statements;
+    }
+
+    public void setStatements(List<Statement> statements) {
+        this.statements = statements;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Program{ \n" +
+                "statements=" + statements +
+                '}';
+    }
+    public String CodeGen(){
+        StringBuilder sb = new StringBuilder();
+        for (Statement stmnt : statements){
+            sb.append(stmnt.CodeGenerate());
+        }
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Property.java
+// ========================================
+package AST;
+
+public class Property {
+    String identifier;      // key name: "name", "selector", etc.
+    String stringLiteral;   // alternative key? (rare)
+    String colon;           // ":" — ignored
+    Value value;            // property value
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getColon() {
+        return colon;
+    }
+
+    public void setColon(String colon) {
+        this.colon = colon;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public void setValue(Value value) {
+        this.value = value;
+    }
+
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Property{ \n");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append("', \n");
+        }
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append("', \n");
+        }
+        if (colon != null) {
+            sb.append("colon='").append(colon).append("', \n");
+        }
+        if (value != null) {
+            sb.append("value=").append(value).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(identifier);
+        sb.append(" : ");
+        sb.append(value.CodeGeneration());
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: PropertyBinding.java
+// ========================================
+package AST;
+
+public class PropertyBinding {
+    String Binding;           // Property name: "value", "title", "disabled"
+    String equal;             // "=" (ignored)
+    String stringLiteral;     // Bound expression: "username", "user.name"
+
+    public String getBinding() {
+        return Binding;
+    }
+
+    public void setBinding(String binding) {
+        Binding = binding;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("PropertyBinding{\n");
+
+        if (Binding != null) {
+            sb.append("Binding='").append(Binding).append("'\n");
+        }
+
+        if (equal != null) {
+            sb.append("equal='").append(equal).append("'\n");
+        }
+
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append("'\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: SrcAttribute.java
+// ========================================
+package AST;
+
+public class SrcAttribute {
+    String src;                     // "src"
+    String equal;                   // "=" (ignored)
+    AngularExpression angularExpression; // e.g., user.avatar
+
+    public String getSrc() {
+        return src;
+    }
+
+    public void setSrc(String src) {
+        this.src = src;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public AngularExpression getAngularExpression() {
+        return angularExpression;
+    }
+
+    public void setAngularExpression(AngularExpression angularExpression) {
+        this.angularExpression = angularExpression;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("SrcAttribute{\n");
+
+        if (src != null) {
+            sb.append("  src='").append(src).append("',\n");
+        }
+        if (equal != null) {
+            sb.append("  equal='").append(equal).append("',\n");
+        }
+        if (angularExpression != null) {
+            sb.append("  angularExpression=").append(angularExpression).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(String elementVar) {
+        if (angularExpression.CodeGeneration() != null) {
+            return elementVar + ".src = '" + angularExpression.CodeGeneration() + "';";
+        } else if (angularExpression != null) {
+            return elementVar + ".src = " + angularExpression.CodeGeneration() + ";";
+        }
+        return "";
+    }
+
+}
+
+// ========================================
+// File: ST.java
+// ========================================
+package AST;
+
+public abstract class ST {
+}
+
+
+// ========================================
+// File: Statement.java
+// ========================================
+package AST;
+
+public class Statement {
+    ImportStatement importStatement;
+    Decorator decorator;
+    ComponentDefinition componentDefinition;
+    VariableStatement variableStatement;
+    FunctionDeclaration functionDeclaration;
+    ClassDeclaration classDeclaration;
+    InterfaceDeclaration interfaceDeclaration;
+    ExportStatement exportStatement;
+    Assignment assignment;
+    String semi; // ";" — usually ignored in PHP
+
+    // --- Getters and Setters (already provided) ---
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Statement{\n");
+        if (decorator != null) {
+            sb.append("  decorator=").append(decorator).append(",\n");
+        }
+        if (componentDefinition != null) {
+            sb.append("  componentDefinition=").append(componentDefinition).append(",\n");
+        }
+        if (variableStatement != null) {
+            sb.append("  variableStatement=").append(variableStatement).append(",\n");
+        }
+        if (functionDeclaration != null) {
+            sb.append("  functionDeclaration=").append(functionDeclaration).append(",\n");
+        }
+        if (classDeclaration != null) {
+            sb.append("  classDeclaration=").append(classDeclaration).append(",\n");
+        }
+        if (interfaceDeclaration != null) {
+            sb.append("  interfaceDeclaration=").append(interfaceDeclaration).append(",\n");
+        }
+        if (exportStatement != null) {
+            sb.append("  exportStatement=").append(exportStatement).append(",\n");
+        }
+        if (assignment != null) {
+            sb.append("  assignment=").append(assignment).append(",\n");
+        }
+        if (semi != null) {
+            sb.append("  semi='").append(semi).append("',\n");
+        }
+
+        // Remove trailing ",\n"
+        String str = sb.toString();
+        if (str.endsWith(",\n")) {
+            str = str.substring(0, str.length() - 2);
+        }
+        return str + "\n}";
+    }
+
+    public ImportStatement getImportStatement() {
+        return importStatement;
+    }
+
+    public void setImportStatement(ImportStatement importStatement) {
+        this.importStatement = importStatement;
+    }
+
+    public Decorator getDecorator() {
+        return decorator;
+    }
+
+    public void setDecorator(Decorator decorator) {
+        this.decorator = decorator;
+    }
+
+    public ComponentDefinition getComponentDefinition() {
+        return componentDefinition;
+    }
+
+    public void setComponentDefinition(ComponentDefinition componentDefinition) {
+        this.componentDefinition = componentDefinition;
+    }
+
+    public VariableStatement getVariableStatement() {
+        return variableStatement;
+    }
+
+    public void setVariableStatement(VariableStatement variableStatement) {
+        this.variableStatement = variableStatement;
+    }
+
+    public FunctionDeclaration getFunctionDeclaration() {
+        return functionDeclaration;
+    }
+
+    public void setFunctionDeclaration(FunctionDeclaration functionDeclaration) {
+        this.functionDeclaration = functionDeclaration;
+    }
+
+    public ClassDeclaration getClassDeclaration() {
+        return classDeclaration;
+    }
+
+    public void setClassDeclaration(ClassDeclaration classDeclaration) {
+        this.classDeclaration = classDeclaration;
+    }
+
+    public InterfaceDeclaration getInterfaceDeclaration() {
+        return interfaceDeclaration;
+    }
+
+    public void setInterfaceDeclaration(InterfaceDeclaration interfaceDeclaration) {
+        this.interfaceDeclaration = interfaceDeclaration;
+    }
+
+    public ExportStatement getExportStatement() {
+        return exportStatement;
+    }
+
+    public void setExportStatement(ExportStatement exportStatement) {
+        this.exportStatement = exportStatement;
+    }
+
+    public Assignment getAssignment() {
+        return assignment;
+    }
+
+    public void setAssignment(Assignment assignment) {
+        this.assignment = assignment;
+    }
+
+    public String getSemi() {
+        return semi;
+    }
+
+    public void setSemi(String semi) {
+        this.semi = semi;
+    }
+
+    public String CodeGenerate(){
+        StringBuilder sb = new StringBuilder();
+        if (decorator != null) {
+            sb.append(decorator.CodeGenerate()).append(",\n");
+        }
+        if (componentDefinition != null) {
+            sb.append(componentDefinition.decorator.CodeGenerate()).append(",\n");
+        }
+        if (variableStatement != null) {
+            sb.append(variableStatement.CodeGeneration()).append(",\n");
+        }
+        if (functionDeclaration != null) {
+            sb.append(functionDeclaration.CodeGenerate()).append(",\n");
+        }
+        if (classDeclaration != null) {
+            sb.append(classDeclaration.CodeGeneration()).append(",\n");
+        }
+
+        if (exportStatement != null) {
+            sb.append("  exportStatement=").append(exportStatement).append(",\n");
+        }
+        if (assignment != null) {
+            sb.append("  assignment=").append(assignment).append(",\n");
+        }
+        if (semi != null) {
+            sb.append("  semi='").append(semi).append("',\n");
+        }
+        return sb.toString();
+
+    }
+}
+
+// ========================================
+// File: StyleAttribute.java
+// ========================================
+package AST;
+
+public class StyleAttribute {
+    String style;
+    String equal;
+    String stringLiteral;
+    AngularExpression angularExpression;
+
+    public String getStyle() { return style; }
+    public void setStyle(String style) { this.style = style; }
+    public String getEqual() { return equal; }
+    public void setEqual(String equal) { this.equal = equal; }
+    public String getStringLiteral() { return stringLiteral; }
+    public void setStringLiteral(String stringLiteral) { this.stringLiteral = stringLiteral; }
+    public AngularExpression getAngularExpression() { return angularExpression; }
+    public void setAngularExpression(AngularExpression angularExpression) { this.angularExpression = angularExpression; }
+
+    @Override
+    public String toString() {
+        return "StyleAttribute{" + style + "=" + (stringLiteral != null ? stringLiteral : angularExpression) + "}";
+    }
+
+    public String CodeGeneration(String elementVar) {
+        if (stringLiteral != null) {
+            // Remove outer quotes: '"color: red;"' → 'color: red;'
+            String css = stringLiteral.replaceAll("^\"|\"$", "");
+            return elementVar + ".style.cssText = '" + css + "';";
+        }
+        return "";
+    }
+}
+
+// ========================================
+// File: Template.java
+// ========================================
+package AST;
+
+public class Template {
+    String backtick;        // "`" — ignored
+    HtmlContent htmlContent;
+
+    public Template(){
+        System.out.println("Hiiiii \n f \n f f\n f\n");
+    }
+    public String getBacktick() {
+        return backtick;
+    }
+
+    public void setBacktick(String backtick) {
+        this.backtick = backtick;
+    }
+
+    public HtmlContent getHtmlContent() {
+        return htmlContent;
+    }
+
+    public void setHtmlContent(HtmlContent htmlContent) {
+        this.htmlContent = htmlContent;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Template{\n");
+
+        if (backtick != null) {
+            sb.append("  backtick='").append(backtick).append("',\n");
+        }
+        if (htmlContent != null) {
+            sb.append("  htmlContent=").append(htmlContent).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGenerate(){
+        StringBuilder sb = new StringBuilder();
+        System.out.println("/////////////////////////////////");
+        sb.append("const main = document.getElementById('app');");
+        sb.append(this.htmlContent.CodeGeneration("main"));
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: TwoWayBinding.java
+// ========================================
+package AST;
+
+public class TwoWayBinding  {
+    String equal;               // "=" — ignored
+    String stringLiteral;       // The bound variable name, e.g. "userName"
+    String towWayBinding;       // Typo: should be "twoWayBinding", holds "ngModel"
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getTowWayBinding() {
+        return towWayBinding;
+    }
+
+    public void setTowWayBinding(String towWayBinding) {
+        this.towWayBinding = towWayBinding;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("TwoWayBinding{\n");
+
+        if (towWayBinding != null) {
+            sb.append("towWayBinding='").append(towWayBinding).append("'\n");
+        }
+
+        if (equal != null) {
+            sb.append("equal='").append(equal).append("'\n");
+        }
+
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append("'\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+}
+
+// ========================================
+// File: Type.java
+// ========================================
+package AST;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Type {
+    String identifier;
+    List<CommaIdentifier> commaIdentifiers = new ArrayList<CommaIdentifier>();
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public List<CommaIdentifier> getCommaIdentifiers() {
+        return commaIdentifiers;
+    }
+
+    public void setCommaIdentifiers(List<CommaIdentifier> commaIdentifiers) {
+        this.commaIdentifiers = commaIdentifiers;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Type{\n");
+
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append('\n');
+        }
+
+        if (commaIdentifiers != null && !commaIdentifiers.isEmpty()) {
+            sb.append("commaIdentifiers=").append(commaIdentifiers).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+}
+
+
+// ========================================
+// File: Value.java
+// ========================================
+package AST;
+
+public class Value {
+    String stringLiteral;
+    String numberLiteral;
+    String booleanLiteral;
+    String identifier;
+    Object object;
+    Array array;
+
+    public String getStringLiteral() {
+        return stringLiteral;
+    }
+
+    public void setStringLiteral(String stringLiteral) {
+        this.stringLiteral = stringLiteral;
+    }
+
+    public String getNumberLiteral() {
+        return numberLiteral;
+    }
+
+    public void setNumberLiteral(String numberLiteral) {
+        this.numberLiteral = numberLiteral;
+    }
+
+    public String getBooleanLiteral() {
+        return booleanLiteral;
+    }
+
+    public void setBooleanLiteral(String booleanLiteral) {
+        this.booleanLiteral = booleanLiteral;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    public Array getArray() {
+        return array;
+    }
+
+    public void setArray(Array array) {
+        this.array = array;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Value{\n");
+
+        if (stringLiteral != null) {
+            sb.append("stringLiteral='").append(stringLiteral).append("\n");
+        }
+        if (numberLiteral != null) {
+            sb.append("numberLiteral='").append(numberLiteral).append("\n");
+        }
+        if (booleanLiteral != null) {
+            sb.append("booleanLiteral='").append(booleanLiteral).append("\n");
+        }
+        if (identifier != null) {
+            sb.append("identifier='").append(identifier).append("\n");
+        }
+        if (object != null) {
+            sb.append("object=").append(object).append("\n");
+        }
+        if (array != null) {
+            sb.append("array=").append(array).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+
+        if (stringLiteral != null) {
+            sb.append("\"").append(stringLiteral).append("\"");
+        }
+        if (numberLiteral != null) {
+            sb.append(numberLiteral).append("\n");
+        }
+        if (booleanLiteral != null) {
+            sb.append(booleanLiteral).append("\n");
+        }
+        if (identifier != null) {
+            sb.append(identifier).append("\n");
+        }
+        if (object != null) {
+            sb.append(object.CodeGeneration()).append("\n");
+        }
+        if (array != null) {
+            sb.append(array.CodeGeneration()).append("\n");
+        }
+
+        return sb.toString();
+    }
+}
+
+
+// ========================================
+// File: VariableStatement.java
+// ========================================
+package AST;
+
+public class VariableStatement  {
+    String identifier;
+    String colon;
+    String equal;
+    String semi;
+    Value value;
+    Array array;
+    Object object;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getColon() {
+        return colon;
+    }
+
+    public void setColon(String colon) {
+        this.colon = colon;
+    }
+
+    public String getEqual() {
+        return equal;
+    }
+
+    public void setEqual(String equal) {
+        this.equal = equal;
+    }
+
+    public String getSemi() {
+        return semi;
+    }
+
+    public void setSemi(String semi) {
+        this.semi = semi;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public void setValue(Value value) {
+        this.value = value;
+    }
+
+    public Array getArray() {
+        return array;
+    }
+
+    public void setArray(Array array) {
+        this.array = array;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("VariableStatement{\n");
+
+        if (identifier != null) {
+            sb.append("  identifier='").append(identifier).append("',\n");
+        }
+        if (colon != null) {
+            sb.append("  colon='").append(colon).append("',\n");
+        }
+        if (equal != null) {
+            sb.append("  equal='").append(equal).append("',\n");
+        }
+        if (semi != null) {
+            sb.append("  semi='").append(semi).append("',\n");
+        }
+        if (value != null) {
+            sb.append("  value=").append(value).append(",\n");
+        }
+        if (array != null) {
+            sb.append("  array=").append(array).append(",\n");
+        }
+        if (object != null) {
+            sb.append("  object=").append(object).append("\n");
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public String CodeGeneration(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("let ");
+        sb.append(identifier);
+        sb.append(" = ");
+        if(value !=null ){
+            sb.append(value.CodeGeneration());
+        }
+        if(object != null){
+            sb.append(object.CodeGeneration());
+            sb.append('\n');
+        }
+        sb.append(";\n");
+        return sb.toString();
+    }
+}
+

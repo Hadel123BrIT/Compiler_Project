@@ -1,0 +1,928 @@
+// ========================================
+// File: ComponentRequirementsTable.java
+// ========================================
+package symbolTable;
+
+import symbolTable.symbols.*;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class ComponentRequirementsTable {
+    private Map<String, Set<InputSymbol>> requiredInputs = new HashMap<>();
+
+    public void checkRequiredInputs(String component, Set<String> providedInputs, int line) {
+        for (InputSymbol input : requiredInputs.getOrDefault(component, new HashSet<>())) {
+            if (input.isRequired() && !providedInputs.contains(input.getName())) {
+                throw new SemanticError(
+                        "Missing required input '" + input.getName() +
+                                "' for component '" + component + "'", line);
+            }
+        }
+    }
+}
+
+// ========================================
+// File: ComponentSymbolTable.java
+// ========================================
+package symbolTable;
+// Symbol table implementation
+import symbolTable.symbols.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ComponentSymbolTable {
+    private Map<String, ComponentSymbol> components = new HashMap<>();
+
+    public void addComponent(String name, ComponentSymbol symbol) {
+        components.put(name, symbol);
+    }
+
+    public void checkComponentExists(String name, int line) {
+        if (!components.containsKey(name)) {
+            throw new SemanticError("Undefined component: " + name, line);
+        }
+    }
+}
+
+
+// ========================================
+// File: ModuleDependencyGraph.java
+// ========================================
+package symbolTable;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import symbolTable.symbols.*;
+
+public class ModuleDependencyGraph {
+    private Map<String, Set<String>> dependencies = new HashMap<>();
+    private Set<String> visited = new HashSet<>();
+    private Set<String> recursionStack = new HashSet<>();
+
+    public void checkForCircularDependency(String module) {
+        if (recursionStack.contains(module)) {
+            throw new SemanticError("Circular dependency detected involving module: " + module, 0);
+        }
+        if (visited.contains(module)) return;
+
+        visited.add(module);
+        recursionStack.add(module);
+
+        for (String dep : dependencies.getOrDefault(module, new HashSet<>())) {
+            checkForCircularDependency(dep);
+        }
+
+        recursionStack.remove(module);
+    }
+}
+
+// ========================================
+// File: PipeSymbolTable.java
+// ========================================
+package symbolTable;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import symbolTable.symbols.*;
+
+public class PipeSymbolTable {
+    private Map<String, PipeSymbol> pipes = new HashMap<>();
+
+    public void checkPipe(String name, int argCount, int line) {
+        if (!pipes.containsKey(name)) {
+            throw new SemanticError("Undefined pipe: " + name, line);
+        }
+        PipeSymbol pipe = pipes.get(name);
+        if (argCount < pipe.getMinArgs() || argCount > pipe.getMaxArgs()) {
+            throw new SemanticError(
+                    "Invalid number of arguments for pipe '" + name +
+                            "'. Expected " + pipe.getMinArgs() + "-" + pipe.getMaxArgs() +
+                            " but got " + argCount, line);
+        }
+    }
+}
+
+// ========================================
+// File: PropertySymbolTable.java
+// ========================================
+package symbolTable;
+import symbolTable.symbols.*;
+import java.util.*;
+
+public class PropertySymbolTable {
+    private Map<String, Map<String, PropertySymbol>> componentProperties = new HashMap<>();
+
+    public void checkPropertyExists(String component, String property, int line) {
+        if (!componentProperties.containsKey(component) ||
+                !componentProperties.get(component).containsKey(property)) {
+            throw new SemanticError(
+                    "Undefined property '" + property +
+                            "' for component '" + component + "'", line);
+        }
+    }
+}
+
+// ========================================
+// File: Row.java
+// ========================================
+package symbolTable;
+
+
+public class Row {
+    String type;
+    String value;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+
+}
+
+
+
+// ========================================
+// File: Scope.java
+// ========================================
+package symbolTable;
+
+public class Scope {
+}
+
+
+// ========================================
+// File: SemanticError.java
+// ========================================
+package symbolTable;
+
+/**
+ * Represents a semantic error detected during Angular compilation.
+ * These errors occur when code is syntactically correct but violates
+ * Angular's semantic rules.
+ */
+public class SemanticError extends RuntimeException {
+    private final String errorCode;
+    private final int line;
+    private final int column;
+    private final String fileName;
+    private final String detailedMessage;
+
+    /**
+     * Creates a new SemanticError with basic information
+     * @param message The error message
+     * @param line The line number where the error occurred
+     */
+    public SemanticError(String message, int line) {
+        this("ANGULAR_SEMANTIC", message, line, -1, null, null);
+    }
+
+    /**
+     * Creates a new SemanticError with complete information
+     * @param errorCode A unique error code (e.g., "NG2001")
+     * @param message The error message
+     * @param line The line number where the error occurred
+     * @param column The column number where the error occurred
+     * @param fileName The source file where the error occurred
+     * @param detailedMessage More detailed explanation of the error
+     */
+    public SemanticError(String errorCode, String message, int line, int column,
+                         String fileName, String detailedMessage) {
+        super(formatMessage(errorCode, message, line, column, fileName));
+        this.errorCode = errorCode;
+        this.line = line;
+        this.column = column;
+        this.fileName = fileName;
+        this.detailedMessage = detailedMessage != null ? detailedMessage : message;
+    }
+
+    private static String formatMessage(String errorCode, String message,
+                                        int line, int column, String fileName) {
+        StringBuilder sb = new StringBuilder();
+
+        if (errorCode != null) {
+            sb.append("[").append(errorCode).append("] ");
+        }
+
+        sb.append(message);
+
+        if (fileName != null) {
+            sb.append(" (File: ").append(fileName).append(")");
+        }
+
+        if (line > 0) {
+            sb.append(" at line ").append(line);
+            if (column > 0) {
+                sb.append(":").append(column);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    // Getters
+    public String getErrorCode() { return errorCode; }
+    public int getLine() { return line; }
+    public int getColumn() { return column; }
+    public String getFileName() { return fileName; }
+    public String getDetailedMessage() { return detailedMessage; }
+
+    /**
+     * Creates a builder for constructing SemanticError instances
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder pattern for SemanticError
+     */
+    public static class Builder {
+        private String errorCode = "ANGULAR_SEMANTIC";
+        private String message;
+        private int line = -1;
+        private int column = -1;
+        private String fileName;
+        private String detailedMessage;
+
+        public Builder withErrorCode(String code) {
+            this.errorCode = code;
+            return this;
+        }
+
+        public Builder withMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder atLocation(int line, int column) {
+            this.line = line;
+            this.column = column;
+            return this;
+        }
+
+        public Builder inFile(String fileName) {
+            this.fileName = fileName;
+            return this;
+        }
+
+        public Builder withDetails(String details) {
+            this.detailedMessage = details;
+            return this;
+        }
+
+        public SemanticError build() {
+            if (message == null) {
+                throw new IllegalStateException("Error message must be specified");
+            }
+            return new SemanticError(errorCode, message, line, column, fileName, detailedMessage);
+        }
+    }
+}
+
+// ========================================
+// File: symbols\ComponentSymbol.java
+// ========================================
+package symbolTable.symbols;
+
+import java.util.*;
+
+public class ComponentSymbol extends Symbol {
+    private String selector;
+    private String templateUrl;
+    private List<InputSymbol> inputs = new ArrayList<>();
+    private List<OutputSymbol> outputs = new ArrayList<>();
+
+    public ComponentSymbol(String name, String selector, int line, int column) {
+        super(name, line, column);
+        this.selector = selector;
+    }
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public String getTemplateUrl() {
+        return templateUrl;
+    }
+
+    public List<InputSymbol> getInputs() {
+        return inputs;
+    }
+
+    public List<OutputSymbol> getOutputs() {
+        return outputs;
+    }
+
+    public void setTemplateUrl(String url) {
+        this.templateUrl = url;
+    }
+
+    public void addInput(InputSymbol input) {
+        inputs.add(input);
+    }
+
+    public void addOutput(OutputSymbol output) {
+        outputs.add(output);
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Component";
+    }
+}
+
+
+// ========================================
+// File: symbols\DirectiveSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class DirectiveSymbol extends Symbol {
+    private String selector;
+    private List<InputSymbol> inputs = new ArrayList<>();
+    private List<OutputSymbol> outputs = new ArrayList<>();
+
+    public DirectiveSymbol(String name, String selector, int line, int column) {
+        super(name, line, column);
+        this.selector = selector;
+    }
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public List<InputSymbol> getInputs() {
+        return inputs;
+    }
+
+    public List<OutputSymbol> getOutputs() {
+        return outputs;
+    }
+
+    public void addInput(InputSymbol input) {
+        inputs.add(input);
+    }
+
+    public void addOutput(OutputSymbol output) {
+        outputs.add(output);
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Directive";
+    }
+}
+
+
+// ========================================
+// File: symbols\InputSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class InputSymbol extends Symbol {
+    private boolean required;
+    private TypeSymbol type;
+
+    public InputSymbol(String name, TypeSymbol type, boolean required, int line, int column) {
+        super(name, line, column);
+        this.type = type;
+        this.required = required;
+    }
+
+    public TypeSymbol getType() {
+        return type;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Input";
+    }
+}
+
+
+// ========================================
+// File: symbols\MethodSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class MethodSymbol extends Symbol {
+    private TypeSymbol returnType;
+    private List<ParameterSymbol> parameters = new ArrayList<>();
+
+    public MethodSymbol(String name, TypeSymbol returnType, int line, int column) {
+        super(name, line, column);
+        this.returnType = returnType;
+    }
+
+    public TypeSymbol getReturnType() {
+        return returnType;
+    }
+
+    public List<ParameterSymbol> getParameters() {
+        return parameters;
+    }
+
+    public void addParameter(ParameterSymbol param) {
+        parameters.add(param);
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Method";
+    }
+}
+
+
+// ========================================
+// File: symbols\ModuleSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class ModuleSymbol extends Symbol {
+    private Set<String> declarations = new HashSet<>();
+    private Set<String> imports = new HashSet<>();
+    private Set<String> exports = new HashSet<>();
+    private Set<String> providers = new HashSet<>();
+
+    public ModuleSymbol(String name, int line, int column) {
+        super(name, line, column);
+    }
+
+    public void addDeclaration(String component) {
+        declarations.add(component);
+    }
+
+    public void addImport(String module) {
+        imports.add(module);
+    }
+
+    public void addExport(String component) {
+        exports.add(component);
+    }
+
+    public void addProvider(String service) {
+        providers.add(service);
+    }
+
+    public Set<String> getDeclarations() {
+        return declarations;
+    }
+
+    public Set<String> getImports() {
+        return imports;
+    }
+
+    public Set<String> getExports() {
+        return exports;
+    }
+
+    public Set<String> getProviders() {
+        return providers;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Module";
+    }
+}
+
+
+// ========================================
+// File: symbols\OutputSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class OutputSymbol extends Symbol {
+    private TypeSymbol eventType;
+
+    public OutputSymbol(String name, TypeSymbol eventType, int line, int column) {
+        super(name, line, column);
+        this.eventType = eventType;
+    }
+
+    public TypeSymbol getEventType() {
+        return eventType;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Output";
+    }
+}
+
+
+// ========================================
+// File: symbols\ParameterSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class ParameterSymbol extends Symbol {
+    private TypeSymbol type;
+
+    public ParameterSymbol(String name, TypeSymbol type, int line, int column) {
+        super(name, line, column);
+        this.type = type;
+    }
+
+    public TypeSymbol getType() {
+        return type;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Parameter";
+    }
+}
+
+
+// ========================================
+// File: symbols\PipeSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class PipeSymbol extends Symbol {
+    private String transformMethod;
+    private int minArgs;
+    private int maxArgs;
+
+    public PipeSymbol(String name, String transformMethod, int minArgs, int maxArgs, int line, int column) {
+        super(name, line, column);
+        this.transformMethod = transformMethod;
+        this.minArgs = minArgs;
+        this.maxArgs = maxArgs;
+    }
+
+    public String getTransformMethod() {
+        return transformMethod;
+    }
+
+    public int getMinArgs() {
+        return minArgs;
+    }
+
+    public int getMaxArgs() {
+        return maxArgs;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Pipe";
+    }
+}
+
+
+// ========================================
+// File: symbols\PropertySymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+/**
+ * Represents a property that can be bound in an Angular template
+ * (either an input or output property of a component/directive)
+ */
+public class PropertySymbol extends Symbol {
+    public enum PropertyKind {
+        INPUT,
+        OUTPUT,
+        TWO_WAY_BINDING
+    }
+
+    private final PropertyKind kind;
+    private final TypeSymbol type;
+    private final String bindingName;
+    private final boolean required;
+    private final String documentation;
+
+    public PropertySymbol(String name,
+                          String bindingName,
+                          PropertyKind kind,
+                          TypeSymbol type,
+                          boolean required,
+                          String documentation,
+                          int line,
+                          int column) {
+        super(name, line, column);
+        this.kind = kind;
+        this.type = type;
+        this.bindingName = bindingName != null ? bindingName : name;
+        this.required = required;
+        this.documentation = documentation;
+    }
+
+    // Factory methods for common cases
+    public static PropertySymbol createInput(String name, TypeSymbol type, int line, int column) {
+        return new PropertySymbol(name, null, PropertyKind.INPUT, type, false, null, line, column);
+    }
+
+    public static PropertySymbol createOutput(String name, TypeSymbol type, int line, int column) {
+        return new PropertySymbol(name, null, PropertyKind.OUTPUT, type, false, null, line, column);
+    }
+
+    public static PropertySymbol createTwoWayBinding(String name, TypeSymbol type, int line, int column) {
+        return new PropertySymbol(name, null, PropertyKind.TWO_WAY_BINDING, type, false, null, line, column);
+    }
+
+    // Getters
+    public PropertyKind getKind() {
+        return kind;
+    }
+
+    public TypeSymbol getType() {
+        return type;
+    }
+
+    public String getBindingName() {
+        return bindingName;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    // Utility methods
+    public boolean isInput() {
+        return kind == PropertyKind.INPUT || kind == PropertyKind.TWO_WAY_BINDING;
+    }
+
+    public boolean isOutput() {
+        return kind == PropertyKind.OUTPUT || kind == PropertyKind.TWO_WAY_BINDING;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return switch (kind) {
+            case INPUT -> "Input Property";
+            case OUTPUT -> "Output Property";
+            case TWO_WAY_BINDING -> "Two-way Binding Property";
+        };
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s (%s): %s%s",
+                getSymbolType(),
+                getName(),
+                getBindingName(),
+                type.getName(),
+                required ? " [required]" : "");
+    }
+}
+
+
+// ========================================
+// File: symbols\ServiceSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class ServiceSymbol extends Symbol {
+    private Map<String, MethodSymbol> methods = new HashMap<>();
+
+    public ServiceSymbol(String name, int line, int column) {
+        super(name, line, column);
+    }
+
+    public void addMethod(MethodSymbol method) {
+        methods.put(method.getName(), method);
+    }
+
+    public MethodSymbol getMethod(String name) {
+        return methods.get(name);
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Service";
+    }
+}
+
+
+// ========================================
+// File: symbols\Symbol.java
+// ========================================
+package symbolTable.symbols;
+
+public abstract class Symbol {
+    private String name;
+    private int declarationLine;
+    private int declarationColumn;
+
+    public Symbol(String name, int line, int column) {
+        this.name = name;
+        this.declarationLine = line;
+        this.declarationColumn = column;
+    }
+
+    public String getName() { return name; }
+    public int getLine() { return declarationLine; }
+    public int getColumn() { return declarationColumn; }
+
+    public abstract String getSymbolType();
+}
+
+
+
+
+
+// ========================================
+// File: symbols\TypeSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class TypeSymbol extends Symbol {
+    private boolean isPrimitive;
+    private boolean isArray;
+    private TypeSymbol arrayType;
+
+    public TypeSymbol(String name, boolean isPrimitive, int line, int column) {
+        super(name, line, column);
+        this.isPrimitive = isPrimitive;
+        this.isArray = false;
+    }
+
+    public boolean isPrimitive() {
+        return isPrimitive;
+    }
+
+    public boolean isArray() {
+        return isArray;
+    }
+
+    public TypeSymbol getArrayType() {
+        return arrayType;
+    }
+
+    public void setArrayType(TypeSymbol type) {
+        this.isArray = true;
+        this.arrayType = type;
+    }
+
+    public boolean isAssignableFrom(TypeSymbol other) {
+        // Simplified type compatibility check
+        if (this.isArray && other.isArray) {
+            return this.arrayType.isAssignableFrom(other.arrayType);
+        }
+        return this.getName().equals(other.getName());
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Type";
+    }
+}
+
+
+// ========================================
+// File: symbols\VariableSymbol.java
+// ========================================
+package symbolTable.symbols;
+import java.util.*;
+
+public class VariableSymbol extends Symbol {
+    private TypeSymbol type;
+    private boolean isTemplateReference;
+
+    public VariableSymbol(String name, TypeSymbol type, boolean isTemplateRef, int line, int column) {
+        super(name, line, column);
+        this.type = type;
+        this.isTemplateReference = isTemplateRef;
+    }
+
+    public TypeSymbol getType() {
+        return type;
+    }
+
+    public boolean isTemplateReference() {
+        return isTemplateReference;
+    }
+
+    @Override
+    public String getSymbolType() {
+        return "Variable";
+    }
+}
+
+
+// ========================================
+// File: SymbolTable.java
+// ========================================
+package symbolTable;
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class SymbolTable {
+    public List<Row> rows = new ArrayList<>();
+
+    public List<Row> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<Row> rows) {
+        this.rows = rows;
+    }
+
+
+    public void print()
+    {
+        for (int i=0 ; i< rows.size(); i++)
+        {
+            if (rows.get(i) != null)
+            {
+                System.out.println(rows.get(i).getType() + "****\t\t\t\t****" +rows.get(i).getValue());
+            }
+        }
+    }
+
+
+}
+
+
+
+// ========================================
+// File: TemplateVariableScopeTable.java
+// ========================================
+package symbolTable;
+import symbolTable.symbols.*;
+
+import java.util.HashMap;
+import java.util.*;
+
+public class TemplateVariableScopeTable {
+    private Stack<Map<String, VariableSymbol>> scopes = new Stack<>();
+
+    public void checkVariableInScope(String name, int line) {
+        for (int i = scopes.size() - 1; i >= 0; i--) {
+            if (scopes.get(i).containsKey(name)) return;
+        }
+        throw new SemanticError("Template variable '" + name + "' is not defined in this scope", line);
+    }
+
+    public void pushScope() {
+        scopes.push(new HashMap<>());
+    }
+
+    public void popScope() {
+        scopes.pop();
+    }
+}
+
+// ========================================
+// File: TypeSymbolTable.java
+// ========================================
+package symbolTable;
+import symbolTable.symbols.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class TypeSymbolTable {
+    private Map<String, TypeSymbol> types = new HashMap<>();
+
+    public void checkTypeCompatibility(TypeSymbol expected, TypeSymbol actual, int line) {
+        if (!expected.isAssignableFrom(actual)) {
+            throw new SemanticError(
+                    "Type mismatch. Expected " + expected.getName() +
+                            " but got " + actual.getName(), line);
+        }
+    }
+}
+

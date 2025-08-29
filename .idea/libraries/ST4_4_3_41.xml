@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="ST4-4.3.41">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/ST4-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/org.jfree.svg-5.0.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/org.abego.treelayout.core-1.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/instrumented-intellij-plugin-v4-1.23.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/antlr4-intellij-adaptor-0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/antlr4-runtime-4.13.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/antlr4-4.13.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../../C old/Downloads/antlr-intellij-plugin-v4/lib/antlr-runtime-3.5.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
