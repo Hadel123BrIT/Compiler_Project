@@ -1,6 +1,6 @@
 package AST;
 
-public class ArrayElement{
+public class ArrayElement extends ASTNode{
     Object object;      // Likely an AngularExpression or identifier
     Value value;        // Likely a literal: string, number, etc.
 

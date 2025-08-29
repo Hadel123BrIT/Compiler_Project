@@ -21,7 +21,6 @@ public class BaseVisitor extends AngularParserBaseVisitor {
     private final PropertySymbolTable propertySymbolTable = new PropertySymbolTable();
     private final TemplateVariableScopeTable templateVariableScopeTable = new TemplateVariableScopeTable();
     private final TypeSymbolTable typeSymbolTable = new TypeSymbolTable();
-
     private final List<String> classSymbolTable = new ArrayList<>();
     private final ModuleDependencyGraph moduleDependencyGraph = new ModuleDependencyGraph();
 

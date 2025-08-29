@@ -1,6 +1,6 @@
 package AST;
 
-public class StyleAttribute {
+public class StyleAttribute extends ASTNode {
     String style;
     String equal;
     String stringLiteral;

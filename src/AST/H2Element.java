@@ -1,6 +1,6 @@
 package AST;
 
-public class H2Element {
+public class H2Element extends ASTNode {
     String htmlTagOpen;         // "<h2"
     String htmlTagClose;        // ">", "/>"
     String htmlTagEnd;          // "</h2>"
@@ -83,6 +83,7 @@ public class H2Element {
         sb.append("}");
         return sb.toString();
     }
+
     public String CodeGeneration() {
         StringBuilder sb = new StringBuilder();
 

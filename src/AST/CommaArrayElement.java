@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaArrayElement {
+public class CommaArrayElement extends ASTNode{
     String comma;               // "," (we can ignore it, but it's there)
     ArrayElement arrayElement;  // the actual element after the comma
 

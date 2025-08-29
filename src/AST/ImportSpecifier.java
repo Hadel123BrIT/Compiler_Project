@@ -1,6 +1,6 @@
 package AST;
 
-public class ImportSpecifier {
+public class ImportSpecifier  extends ASTNode {
     String identifier;
 
     public String getIdentifier() {

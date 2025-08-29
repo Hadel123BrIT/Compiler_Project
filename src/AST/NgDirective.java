@@ -1,6 +1,6 @@
 package AST;
 
-public class NgDirective {
+public class NgDirective extends ASTNode {
     String equal;
     String stringLiteral;
     String directive;

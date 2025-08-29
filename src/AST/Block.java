@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Block {
+public class Block extends ASTNode{
     String lbrace = "{";                    // '{'
     String rbrace = "}";                    // '}'
     List<Statement> statements = new ArrayList<>();

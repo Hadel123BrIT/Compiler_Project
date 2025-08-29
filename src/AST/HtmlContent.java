@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HtmlContent {
+public class HtmlContent extends ASTNode {
     static int id =0;
     List<HtmlElement> htmlElements = new ArrayList<>();
     List<Interpolation> interpolations = new ArrayList<>();

@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayElements{
+public class ArrayElements extends ASTNode {
     ArrayElement arrayElement;
     List<CommaArrayElement> commaArrayElements = new ArrayList<>();
 

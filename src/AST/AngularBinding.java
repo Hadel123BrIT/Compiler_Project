@@ -1,6 +1,6 @@
 package AST;
 
-public class AngularBinding {
+public class AngularBinding extends ASTNode {
     String binding;
     String equal;
     String stringLiteral;

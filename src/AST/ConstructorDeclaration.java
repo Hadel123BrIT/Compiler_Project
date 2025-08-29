@@ -1,6 +1,6 @@
 package AST;
 
-public class ConstructorDeclaration {
+public class ConstructorDeclaration extends ASTNode {
     String constructor;         // "constructor"
     String lparen;              // "("
     String rparen;              // ")"

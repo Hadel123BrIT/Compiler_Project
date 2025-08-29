@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportClause {
+public class ImportClause extends ASTNode {
     String lbrace;
     String rbrace;
     String identifier;

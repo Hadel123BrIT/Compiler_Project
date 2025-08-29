@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaComponentProperty {
+public class CommaComponentProperty extends ASTNode{
     String comma;                   // "," — ignored in codegen
     ComponentProperty componentProperty;  // the actual key-value pair
 

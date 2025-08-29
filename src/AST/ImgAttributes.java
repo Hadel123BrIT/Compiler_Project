@@ -1,6 +1,6 @@
 package AST;
 
-public class ImgAttributes {
+public class ImgAttributes extends ASTNode {
     AngularBinding angularBinding;
     StyleAttribute styleAttribute;
     SrcAttribute srcAttribute;

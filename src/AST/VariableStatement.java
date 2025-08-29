@@ -1,6 +1,6 @@
 package AST;
 
-public class VariableStatement  {
+public class VariableStatement  extends ASTNode {
     String identifier;
     String colon;
     String equal;

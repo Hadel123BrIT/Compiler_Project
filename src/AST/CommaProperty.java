@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaProperty{
+public class CommaProperty extends ASTNode{
     String comma;           // "," — ignored, but we know it's there
     Property property;      // the actual key-value pair after the comma
 

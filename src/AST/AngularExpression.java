@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AngularExpression{
+public class AngularExpression extends ASTNode{
     String identifier;
     List<DotIdentifier>dotIdentifiers=new ArrayList<DotIdentifier>();
 

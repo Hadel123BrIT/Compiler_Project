@@ -1,6 +1,6 @@
 package AST;
 
-public class TwoWayBinding  {
+public class TwoWayBinding  extends ASTNode {
     String equal;               // "=" — ignored
     String stringLiteral;       // The bound variable name, e.g. "userName"
     String towWayBinding;       // Typo: should be "twoWayBinding", holds "ngModel"

@@ -1,6 +1,6 @@
 package AST;
 
-public class ComponentProperty {
+public class ComponentProperty extends ASTNode {
     String selector;
     String colon;
     String stringLiteral;

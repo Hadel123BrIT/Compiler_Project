@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InterfaceDeclaration {
+public class InterfaceDeclaration extends ASTNode {
     String Interface;
     String lbrace;
     String rbrace;

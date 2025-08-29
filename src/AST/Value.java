@@ -1,6 +1,6 @@
 package AST;
 
-public class Value {
+public class Value extends ASTNode{
     String stringLiteral;
     String numberLiteral;
     String booleanLiteral;

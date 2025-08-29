@@ -1,6 +1,6 @@
 package AST;
 
-public class Property {
+public class Property extends ASTNode {
     String identifier;      // key name: "name", "selector", etc.
     String stringLiteral;   // alternative key? (rare)
     String colon;           // ":" — ignored

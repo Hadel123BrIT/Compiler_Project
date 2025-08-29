@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Object {
+public class Object extends ASTNode {
     String lbrace;
     String rbrace;
     Property property;

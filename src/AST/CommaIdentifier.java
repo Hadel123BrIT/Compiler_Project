@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaIdentifier {
+public class CommaIdentifier extends ASTNode{
     String comma;           // "," — ignored in codegen
     String identifier;      // the identifier after comma, e.g. "b"
 

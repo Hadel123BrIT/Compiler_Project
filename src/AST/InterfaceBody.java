@@ -1,6 +1,6 @@
 package AST;
 
-public class InterfaceBody {
+public class InterfaceBody extends ASTNode {
     String identifier;
     String colon;
     String semi;

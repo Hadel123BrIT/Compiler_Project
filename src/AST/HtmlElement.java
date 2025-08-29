@@ -1,6 +1,6 @@
 package AST;
 
-public class HtmlElement {
+public class HtmlElement extends ASTNode {
     DivElement divElement;
     PElement pElement;
     ImgElement imgElement;

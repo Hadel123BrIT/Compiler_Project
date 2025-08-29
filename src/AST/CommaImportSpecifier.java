@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaImportSpecifier {
+public class CommaImportSpecifier extends ASTNode{
     String comma;
 ImportSpecifier importSpecifier;
 

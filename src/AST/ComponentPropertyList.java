@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComponentPropertyList {
+public class ComponentPropertyList extends ASTNode {
     ComponentProperty componentProperty;
     String comma;  // "," after first property (ignored in codegen)
     List<CommaComponentProperty> commaComponentProperties = new ArrayList<>();

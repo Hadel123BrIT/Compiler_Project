@@ -1,6 +1,6 @@
 package AST;
 
-public class Assignment extends Statement{
+public class Assignment extends Statement {
     String identifier;
     String dot;
     String equal;

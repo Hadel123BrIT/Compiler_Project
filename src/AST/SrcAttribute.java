@@ -1,6 +1,6 @@
 package AST;
 
-public class SrcAttribute {
+public class SrcAttribute extends ASTNode {
     String src;                     // "src"
     String equal;                   // "=" (ignored)
     AngularExpression angularExpression; // e.g., user.avatar

@@ -1,6 +1,6 @@
 package AST;
 
-public class Literal {
+public class Literal extends ASTNode{
     String stringLiteral;
     String numberLiteral;
     String booleanLiteral;

@@ -1,6 +1,6 @@
 package AST;
 
-public class PElement {
+public class PElement extends ASTNode {
     String htmlTagOpen;         // "<p"
     String htmlTagClose;        // ">", "/>"
     String htmlTagEnd;          // "</p>"

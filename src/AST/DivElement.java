@@ -1,6 +1,6 @@
 package AST;
 
-public class DivElement {
+public class DivElement extends ASTNode {
     String htmlTagOpen;     // "<div"
     String htmlTagClose;    // ">"
     String htmlTagEnd;      // "</div>"

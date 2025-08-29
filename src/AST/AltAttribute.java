@@ -1,6 +1,6 @@
 package AST;
 
-public class AltAttribute {
+public class AltAttribute extends ASTNode{
     String alt;
     String equal;
     AngularExpression angularExpression;

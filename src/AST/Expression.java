@@ -1,6 +1,6 @@
 package AST;
 
-public class Expression{
+public class Expression extends ASTNode {
     String lbrace;              // '{' — used in object literals?
     String rbrace;              // '}' — same
     String identifier;          // e.g. "user"

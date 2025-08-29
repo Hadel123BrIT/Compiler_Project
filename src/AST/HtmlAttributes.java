@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HtmlAttributes {
+public class HtmlAttributes extends ASTNode {
     List<AngularBinding> angularBindings = new ArrayList<>();
     List<AngularEvent> angularEvents = new ArrayList<>();
     List<AngularDirective> angularDirectives = new ArrayList<>();

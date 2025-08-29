@@ -1,6 +1,6 @@
 package AST;
 
-public class ComponentOptions {
+public class ComponentOptions extends ASTNode {
     ComponentPropertyList componentPropertyList;
 
     public ComponentPropertyList getComponentPropertyList() {

@@ -1,6 +1,6 @@
 package AST;
 
-public class CommaExpression {
+public class CommaExpression extends ASTNode{
     String comma;           // "," — usually ignored in codegen
     Expression expression;  // the actual expression after the comma
 

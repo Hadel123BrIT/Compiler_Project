@@ -1,6 +1,6 @@
 package AST;
 
-public class AngularEvent{
+public class AngularEvent extends ASTNode{
     String clickEvent;   // e.g. "click", "submit", "mouseenter"
     String equal;        // "="
     String stringLiteral; // e.g. "save()", "confirmDelete()"

@@ -1,6 +1,6 @@
 package AST;
 
-public class Statement {
+public class Statement extends ASTNode{
     ImportStatement importStatement;
     Decorator decorator;
     ComponentDefinition componentDefinition;

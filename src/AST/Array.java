@@ -1,6 +1,6 @@
 package AST;
 
-public class Array{
+public class Array extends ASTNode{
     String arrayStart;      // "["
     String arrayEnd;        // "]"
     ArrayElements arrayElements;

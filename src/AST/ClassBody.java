@@ -1,6 +1,6 @@
 package AST;
 
-public class ClassBody {
+public class ClassBody  extends ASTNode{
     VariableStatement variableStatement;
     FunctionDeclaration functionDeclaration;
     ConstructorDeclaration constructorDeclaration;
