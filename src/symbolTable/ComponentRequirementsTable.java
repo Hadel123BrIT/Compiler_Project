@@ -13,9 +13,10 @@ public class ComponentRequirementsTable {
     public void checkRequiredInputs(String component, Set<String> providedInputs, int line) {
         for (InputSymbol input : requiredInputs.getOrDefault(component, new HashSet<>())) {
             if (input.isRequired() && !providedInputs.contains(input.getName())) {
-                throw new SemanticError(
-                        "Missing required input '" + input.getName() +
-                                "' for component '" + component + "'", line);
+                throw SemanticError.builder()
+                        .withMessage("Missing required input " + input.getName() + "' for component '")
+                        .atLocation(line, -1)
+                        .build();
             }
         }
     }

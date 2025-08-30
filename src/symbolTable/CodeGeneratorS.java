@@ -18,7 +18,7 @@ public class CodeGeneratorS {
     private final StringWriter jsOutput = new StringWriter();
     private final PrintWriter writer = new PrintWriter(jsOutput);
     private final Set<String> generatedModules = new HashSet<>();
-    private String currentComponentName = null;
+    private final String currentComponentName = null;
 
     public CodeGeneratorS(ComponentSymbolTable componentTable,
                          PropertySymbolTable propertyTable,

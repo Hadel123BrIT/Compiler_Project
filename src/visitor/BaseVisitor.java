@@ -23,9 +23,7 @@ public class BaseVisitor extends AngularParserBaseVisitor {
     private final TypeSymbolTable typeSymbolTable = new TypeSymbolTable();
     private final List<String> classSymbolTable = new ArrayList<>();
     private final ModuleDependencyGraph moduleDependencyGraph = new ModuleDependencyGraph();
-
     private final ComponentRequirementsTable componentRequirementsTable = new ComponentRequirementsTable();
-
     private final FunctionsSymbolTable functionsSymbolTable= new FunctionsSymbolTable();
     private static final Set<String> HTML_TAGS = Set.of(
             "div", "p", "img", "h1", "h2", "h3", "h4", "h5", "h6",
